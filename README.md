@@ -45,7 +45,7 @@ Users can manually call functions from the command line. User specifications are
 
 -on (output name): Output name. If there are multiple files created, output name will be the prefix and appended to time interval associated with the calculations.
 
--l (limit): Boundary box for latitude longitude (-80 80 180 180 would encompass the full Earth)
+-l (limit): Boundary box for latitude longitude (-90 90 180 180 would encompass the full Earth)
 
 
 #### Possible Commands
