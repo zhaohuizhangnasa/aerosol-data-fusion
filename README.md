@@ -80,6 +80,27 @@ python gtools.py -cfg -fn "C:\LOCATION\CONFIG_FILE_NAME.yml"
 
 ![image.png](attachment:04ae5dab-4462-4faf-9a80-a1a1879bda71.png)
 
+## Docker
+
+The repository includes a Dockerfile, which can be used to a build a Docker image for the package. A Docker image is essentially a blueprint for the creation of a Docker container. A container run from the image built using the provided Dockerfile is a host-isolated environment that can be used to execute the data fusion package with provided user inputs.
+
+Configuration of the YAML file is required for the package to be run with this Dockerfile. The input and output location fields in the YAML should be set to the paths of the input and output as they appear in the container. For example, if the user would like to follow the example setup outlined below, the input and output locations in the YAML should be set to /app/src/inputs/ and /app/src/outputs/, respectively. Note that when it is run, the container will automatically execute the package using the configuration in the YAML file.  If the YAML file is modified, the image will need to be re-built before the changes are reflected in a containerized execution. 
+
+With Docker installed, the first step to running the package in a Docker container is to build the image. Once in the directory with the Dockerfile, a user can run the following command to build the image, where [image_name] denotes a name for the image:
+
+docker build . -t [image_name]
+
+Below is an example:
+
+docker build . -t data-fusion
+
+Once the command executes, a Docker image will have been created. Next, the user will need to run a container from the image. This step requires the user to specify the input and output data that the package should use. This data will be shared between the container environment and the host, meaning that changes made in the container (e.g. by the package) will be reflected on the host. To run the container, a user can execute the following command:
+
+docker run [flags] -v "/absolute/path/to/host/input:/absolute/path/to/container/input" -v "/absolute/path/to/host/output:/absolute/path/to/container/output" [image_name]:[version]
+
+Below is an example - note especially the appearance of the windows source path (/c/ instead of C:/):
+
+docker run -v "/c/Users/Neil/Desktop/Work/Package Data/SampleInputs 0000-0059 01-01-2020:/app/src/inputs" -v "/c/Users/Neil/Desktop/Work/Package Data/SampleOutputs 0000-0059 01-01-2020:/app/src/outputs" data-fusion:latest
 
 ## Example Inputs / Outputs
 
