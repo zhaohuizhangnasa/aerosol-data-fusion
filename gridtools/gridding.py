@@ -87,6 +87,7 @@ def grid(limit,gsize,indata,inlat,inlon): #valid_range
     mintau[mintau==10]=None
     maxtau[maxtau==-1]=None
     avgtau[avgtau==-1]=None
+    
     return avgtau,stdtau,grdlat,grdlon,mintau,maxtau,count,sumtau
 
 # filelist - list of sensor names we want to grid here

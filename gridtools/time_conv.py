@@ -11,9 +11,18 @@ def to_datetime(date_string):
 
     return d
 
+# get system date
+def sys_time():
+    now = str(datetime.datetime.now())
+    now_str = now[:10]
+    now_str = now_str.replace("-", "")
+    
+    return str(now_str)
+
 # function that pulls time from filename (str)
 # returns datetime object
 def filename_time(filename):
+    print("FILENAME: ", filename)
     time = filename.split(".")[1:3]
     date = datetime.datetime.strptime(time[0][3:], '%y%j')
     
@@ -67,10 +76,12 @@ def split_filenames(filelist):
 
         #split_files.append(list(d.values()))
         split_files.append(d)
-
+        
+    """
     # missing files check
     if len(split_files) < 6:
         print("Missing sensors")
     elif len(split_files)>6:
         print("Too many sensors")
+    """
     return split_files

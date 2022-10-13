@@ -1,4 +1,5 @@
 #import other module files
+from concurrent.futures import process
 import sat_data_input
 import filter_data
 import gridding
@@ -274,8 +275,8 @@ def netCDF_sensor_statistics_id(filelist, limit, gsize, geo_list, phy_list, outp
         # print(split_files)
         
         # grid files
-        #grid_nc_sensor_statistics
-        grid_ncf.grid_nc_sensor_statistics(limit, gsize, geo_list, phy_list, f, name, phy_nc=phy_list, phy_hdf=phy_list)
+        #grid_nc_sensor_statistics_metadata
+        grid_ncf.grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, f, name, phy_nc=phy_list, phy_hdf=phy_list)
         curr = curr + datetime.timedelta(minutes = int(time_interval))
 
     end_timer = time.time()
@@ -322,13 +323,23 @@ def netCDF_yaml_config(file_name):
     outputname = file_io["output_name"]
     
     for f in split_files:
-        name = outputfolder + outputname + str(curr).replace(":", "-")+".nc"
-        #print(f)
+        #name = outputfolder + outputname + str(curr).replace(":", "-")+".nc"
+        #XAERDT_L3_MEASURES_QD_HH.YYYYMMDD.HHMM.V0.ProcessingDate.nc
+        time_string = str(curr).replace(":", "").replace("-", "").replace(" ", "")
+        time_string = time_string[:8] + '.' + time_string[8:-2]
+        processing_date = time_conv.sys_time()
+        name = outputfolder + "XAERDT_L3_MEASURES_QD_HH." + time_string+ ".V0." +processing_date+ ".nc"
+        
+        #print(f) f = dict (key: sensor, values: array of filelocs)
         # print(split_files)
         
+        print("\n\nNAME:", name)
+        print("\n\TIME STRING:", curr)
+        print("\n\PROCESS DATE:", time_interval)
+        
         # grid files
-        #grid_nc_sensor_statistics
-        grid_ncf.grid_nc_sensor_statistics(limit, gsize, geo_list, phy_list, f, name, phy_nc, phy_hdf)
+        #grid_nc_sensor_statistics_metadata
+        grid_ncf.grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, f, name, curr, time_interval, phy_nc, phy_hdf)
         curr = curr + datetime.timedelta(minutes = int(time_interval))
 
     end_timer = time.time()
