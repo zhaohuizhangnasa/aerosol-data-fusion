@@ -40,8 +40,8 @@ def grid(limit,gsize,indata,inlat,inlon): #valid_range
     maxlon=float(limit[3])
     
     # pixel dimensions
-    xdim=int(1+round(((maxlon-minlon)/dx)))
-    ydim=int(1+round(((maxlat-minlat)/dy)))
+    xdim=int(1+round((abs(maxlon-minlon)/dx)))
+    ydim=int(1+round((abs(maxlat-minlat)/dy)))
     
     sumtau=np.zeros((xdim,ydim)) # init 2d array map with zeros
     sqrtau=np.zeros((xdim,ydim))
@@ -57,6 +57,8 @@ def grid(limit,gsize,indata,inlat,inlon): #valid_range
     for ii in range(len(indata)):
         #check within bounds
         # indata should be filtered based on range (not 0, 5 but rather valid_range)
+        # if (inlat[ii]>=minlat and inlat[ii] <= maxlat and inlon[ii]>= minlon and inlon[ii]<= maxlon): # and indata[ii] >0.0 and indata[ii]<=5.0):
+
         if (inlat[ii]>=minlat and inlat[ii] <= maxlat and inlon[ii]>= minlon and inlon[ii]<= maxlon): # and indata[ii] >0.0 and indata[ii]<=5.0):
             # pixel coordinates for bounds
             i=int(round((inlon[ii]-minlon)/dx))
@@ -144,4 +146,19 @@ def multi_sensor_grid(filelist, gsize, limit, phy_list, geo_list=['latitude', 'l
     avgtau,stdtau,grdlat,grdlon,mintau,maxtau,count,sumtau = grid(limit,gsize,indata,inlat,inlon)
     
     return avgtau,stdtau,grdlat,grdlon,mintau,maxtau,count,sumtau
+
+#grid(limit,gsize,indata,inlat,inlon)
+if __name__ == '__main__':
+    limit = [-90., 90., -180., 180.]
+    limit= [1, 10, 1, 10]
+    limit = [1, 2, 1, 3]
+    gsize = 1# 0.25
+    indata = [0] * 10
+    inlat = [1,2,3,4,5,6,7,8,9,90]
+    inlon = [1,2,3,4,5,6,7,8,9,180]
+    
+    avgtau,stdtau,grdlat,grdlon,mintau,maxtau,count,sumtau = grid(limit,gsize,indata,inlat,inlon)
+    #print(avgtau)
+    
+    print(avgtau)
     
