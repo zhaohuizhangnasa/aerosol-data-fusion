@@ -1,6 +1,6 @@
 grid_settings:
-  gridsize: 10 #0.25 #pixel resolution size
-  limit: [-90., 90., -180., 180.] #[-90., 90., -180., 180.] #rectangle to grid (default is full world)
+  gridsize: 0.25 #0.25 #pixel resolution size
+  limit: [-89.875, 89.875, -179.875, 179.875] #rectangle to grid (default is full world)
   fill_value: 9999. #default is NAN
   time_interval: 30 #minute intervals that will be split
   time_start: "2020/01/01/00/00" # year/month/day/hour/min
@@ -19,3 +19,4 @@ file_io:
   file_location_file: "PATH/file_name_containing_paths_of_specific_files_to_read.txt"
   output_location: "/mnt/c/Users/bobgr/Desktop/Spring 2022 NASA/Gridtools Package (Code, README, inputs, outputs, examples, verification)/SampleOutputs 0000-0059 01-01-2020/"
   output_name: "OUTPUTv15" # output files will contain this name+time_interval
+  static_file: "/mnt/c/Users/bobgr/Desktop/Spring 2022 NASA/Gridtools Package (Code, README, inputs, outputs, examples, verification)/LSM_ELV_QDEG_FIXED.nc"

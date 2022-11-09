@@ -22,7 +22,7 @@ def sys_time():
 # function that pulls time from filename (str)
 # returns datetime object
 def filename_time(filename):
-    print("FILENAME: ", filename)
+    #print("FILENAME: ", filename)
     time = filename.split(".")[1:3]
     date = datetime.datetime.strptime(time[0][3:], '%y%j')
     

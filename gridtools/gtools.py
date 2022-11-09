@@ -301,6 +301,9 @@ def netCDF_yaml_config(file_name):
     else:
         filelist = fileparser.read_folder_sat_data(file_io["file_location_folder"])
         
+    #static file for Land_Sea_Mask and Topographic_Altitude
+    static_file = file_io["static_file"]
+    print("static file:", static_file)
 
     time_start = grid_settings["time_start"]
     time_end = grid_settings["time_end"]
@@ -333,13 +336,13 @@ def netCDF_yaml_config(file_name):
         #print(f) f = dict (key: sensor, values: array of filelocs)
         # print(split_files)
         
-        print("\n\nNAME:", name)
-        print("\n\TIME STRING:", curr)
-        print("\n\PROCESS DATE:", time_interval)
+        #print("\n\nNAME:", name)
+        #print("\n\TIME STRING:", curr)
+        #print("\n\PROCESS DATE:", time_interval)
         
         # grid files
         #grid_nc_sensor_statistics_metadata
-        grid_ncf.grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, f, name, curr, time_interval, phy_nc, phy_hdf)
+        grid_ncf.grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, f, name, curr, time_interval, phy_nc, phy_hdf, static_file)
         curr = curr + datetime.timedelta(minutes = int(time_interval))
 
     end_timer = time.time()
