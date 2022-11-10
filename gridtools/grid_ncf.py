@@ -769,8 +769,8 @@ def grid_nc_sensor_statistics_metadata2(limit, gsize, geo_list, phy_list, fileli
     #time.units = "minutes since "+str(time_start)
     
     #set lats and lons  (or rather y and x)
-    lats = ds.createVariable('latitude', np.short, ('lat',), fill_value=-9999.) #latitude is fatitude
-    lons = ds.createVariable('longitude', np.short, ('lon',), fill_value=-9999.)
+    lats = ds.createVariable('latitude', 'f4', ('lat',), fill_value=-9999.) #latitude is fatitude
+    lons = ds.createVariable('longitude', 'f4', ('lon',), fill_value=-9999.)
     sensor_var = ds.createVariable("sensors", np.short, ('sensor', ))
     
     #sensors metadata
