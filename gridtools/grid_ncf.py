@@ -854,7 +854,7 @@ def grid_nc_sensor_statistics_metadata2(limit, gsize, geo_list, phy_list, fileli
     #netCDF4.nc_put_att(ds, solar_zenith_variable, 'add_offset', 'f4', 1, 0)
     
     
-    #solar_zenith_variable[0, :, :] = solar_zenith.get_SZA_vec(limit, gsize, time_start, time_diff)
+    solar_zenith_variable[0, :, :] = solar_zenith.get_SZA_vec(limit, gsize, time_start, time_diff)
     #copy solar_zenith
     """ 
     path = "/mnt/c/Users/bobgr/Desktop/Spring 2022 NASA/Gridtools Package (Code, README, inputs, outputs, examples, verification)/"
