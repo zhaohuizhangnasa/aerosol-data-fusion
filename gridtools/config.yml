@@ -15,7 +15,8 @@ variables:
   
 file_io:
   # file_location_folder takes precedence over file_location_file unless "NA"
-  file_location_folder:  "/mnt/c/Users/bobgr/Desktop/Spring 2022 NASA/Gridtools Package (Code, README, inputs, outputs, examples, verification)/SampleInputs 0000-0059 01-01-2020/"
+  file_location_folder: "/mnt/c/Users/bobgr/Desktop/Spring 2022 NASA/Gridtools Package (Code, README, inputs, outputs, examples, verification)/SampleInputs limited/"
+  #"/mnt/c/Users/bobgr/Desktop/Spring 2022 NASA/Gridtools Package (Code, README, inputs, outputs, examples, verification)/SampleInputs 0000-0059 01-01-2020/"
   file_location_file: "PATH/file_name_containing_paths_of_specific_files_to_read.txt"
   output_location: "/mnt/c/Users/bobgr/Desktop/Spring 2022 NASA/Gridtools Package (Code, README, inputs, outputs, examples, verification)/SampleOutputs 0000-0059 01-01-2020/"
   output_name: "OUTPUTv15" # output files will contain this name+time_interval

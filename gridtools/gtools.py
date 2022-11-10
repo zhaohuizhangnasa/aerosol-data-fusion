@@ -342,7 +342,7 @@ def netCDF_yaml_config(file_name):
         
         # grid files
         #grid_nc_sensor_statistics_metadata
-        grid_ncf.grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, f, name, curr, time_interval, phy_nc, phy_hdf, static_file)
+        grid_ncf.grid_nc_sensor_statistics_metadata2(limit, gsize, geo_list, phy_list, f, name, curr, time_interval, phy_nc, phy_hdf, static_file)
         curr = curr + datetime.timedelta(minutes = int(time_interval))
 
     end_timer = time.time()

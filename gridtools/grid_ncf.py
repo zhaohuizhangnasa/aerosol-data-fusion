@@ -688,7 +688,7 @@ def grid_nc_sensor_statistics(limit, gsize, geo_list, phy_list, filelist, filena
 # sat_files - list of satellite files to pull data from
 # saves all satellite sensor gridded data as separate variables
 #def grid_nc_single_statistics(limit, gsize, inlat, inlon, geo_list, phy_list, filelist, filename):
-def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelist, filename, time_start, time_diff, phy_nc=None, phy_hdf=None, static_file=None):
+def grid_nc_sensor_statistics_metadata2(limit, gsize, geo_list, phy_list, filelist, filename, time_start, time_diff, phy_nc=None, phy_hdf=None, static_file=None):
     
     # define boundary coordinates
     minlat=float(limit[0])
@@ -758,19 +758,19 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
     """
     
     # Create time, lat, lon, sensor dimensions
-    timed = ds.createDimension('time', 1)#None)
+    timed = ds.createDimension('time', None)
     lat = ds.createDimension('lat', lat_dim) #latitude is fatitude (y)
     lon = ds.createDimension('lon', lon_dim) # x
     sensor = ds.createDimension('sensor', 6) #only used for SensorWeighting mask
     
     #set time variable to filename parse
-    times = ds.createVariable('time', 'f4', ('time',))
+    times = ds.createVariable('time', np.short, ('time',))
     times.long_name = "time"
     #time.units = "minutes since "+str(time_start)
     
     #set lats and lons  (or rather y and x)
-    lats = ds.createVariable('latitude', 'f4', ('lat',), fill_value=-9999.) #latitude is fatitude
-    lons = ds.createVariable('longitude', 'f4', ('lon',), fill_value=-9999.)
+    lats = ds.createVariable('latitude', np.short, ('lat',), fill_value=-9999.) #latitude is fatitude
+    lons = ds.createVariable('longitude', np.short, ('lon',), fill_value=-9999.)
     sensor_var = ds.createVariable("sensors", np.short, ('sensor', ))
     
     #sensors metadata
@@ -854,11 +854,9 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
     #netCDF4.nc_put_att(ds, solar_zenith_variable, 'add_offset', 'f4', 1, 0)
     
     
-    
-    
-    solar_zenith_variable[0, :, :] = solar_zenith.get_SZA_vec(limit, gsize, time_start, time_diff)
+    #solar_zenith_variable[0, :, :] = solar_zenith.get_SZA_vec(limit, gsize, time_start, time_diff)
     #copy solar_zenith
-    
+    """ 
     path = "/mnt/c/Users/bobgr/Desktop/Spring 2022 NASA/Gridtools Package (Code, README, inputs, outputs, examples, verification)/"
     fn = path + "SampleOutputs 0000-0059 01-01-2020/Old outputs/XAERDT_L3_MEASURES_QD_HH.20200101.0000.V0.20221108.nc"
     src = netCDF4.Dataset(fn)
@@ -869,6 +867,7 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
     src.close()
     
     print("solar zenith done")
+    """
     
     
     # for calculating LEOGEO statistics
@@ -935,7 +934,7 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
                     index = len(values) #i * len(phy_list) + j
                     aod_long = meta[j]["long_name"]
                     name = naming_conventions.nc_var_name(p_vars, s_name, aod_stat) #str(s_name+"_"+p_vars)
-                    values.append(ds.createVariable(name, np.short, ('time', 'lat', 'lon', ), fill_value=meta[j]["_FillValue"]))
+                    values.append(ds.createVariable(name, 'f4', ('time', 'lat', 'lon', ), fill_value=meta[j]["_FillValue"]))
                     
                     # metadata
                     values[index].units = "1"#meta[j]["units"]
@@ -1014,7 +1013,7 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
 
                 index = len(values) #i * len(phy_list) + j
                 name = naming_conventions.nc_var_name(p_vars, s_name) #str(s_name+"_"+p_vars)
-                values.append(ds.createVariable(name, np.short, ('time', 'lat', 'lon', ), fill_value=meta[j]["_FillValue"]))
+                values.append(ds.createVariable(name, 'f4', ('time', 'lat', 'lon', ), fill_value=meta[j]["_FillValue"]))
                 
                 # metadata
                 values[index].units = "degree"#meta[j]["units"]
@@ -1110,14 +1109,20 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
             
             i = 0
             for satellite in sensor_order:
-                #add number of sensors together
-                if len(number_of_sensors)==0:
-                    number_of_sensors = sensor_idx_arr[p_var][satellite]
+                # check to make sure sensor is in there
+                if satellite in sensor_idx_arr[p_var]:
+                    
+                    #add number of sensors together
+                    if len(number_of_sensors)==0:
+                        number_of_sensors = sensor_idx_arr[p_var][satellite]
+                    else:
+                        number_of_sensors = number_of_sensors + sensor_idx_arr[p_var][satellite]
+                    
+                    #save for sensor layer
+                    sensor_idx_variable[leogeo_index][i, :, :] = sensor_idx_arr[p_var][satellite]
+                # no files for this satellite
                 else:
-                    number_of_sensors = number_of_sensors + sensor_idx_arr[p_var][satellite]
-                
-                #save for sensor layer
-                sensor_idx_variable[leogeo_index][i, :, :] = sensor_idx_arr[p_var][satellite]
+                    pass
                 i += 1
             
             name = naming_conventions.nc_var_name(p_var, "LEOGEO", "NumberOfSensors")
@@ -1167,6 +1172,411 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
             # avg[k].add_offset = meta["add_offset"]
             # avg[k].Parameter_Type = meta["Parameter_Type"]
 
+            sensor_id_name = str("sensor_id_x_" + p_vars)
+            sensor_id.append(ds.createVariable(sensor_id_name, 'f4', ('time', 'lat', 'lon', )))
+            sensor_id[k].units = 'unknown'
+            sensor_id[k][0, :, :] = sensor_id_x
+        except:
+            #print("There are: ", len(sensors.get(p_vars)), " sensors for the var")
+            print(p_vars)
+            print(sensors.get(p_vars))
+    """
+
+    #close file
+    ds.close()
+    # output = 1 netcdf with six variables (one for each sensor) 
+    # merge = run two loops (lat lon) (xdim, ydim from grid) 
+    # merge aod equal to average of six sensors making sure no nan
+    # identify which sensors are availabe - sensor ID variable 0 or 1 (unavailable vs available)
+    # byte type array, keep n-dimensional for now
+    # minimum number of things to merge: in the future
+
+    # future capabilities:
+    # minimum number, flagging system, use higher quality data (prefiltered)
+    
+def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelist, filename, time_start, time_diff, phy_nc=None, phy_hdf=None):
+    #start_timer = time.time()
+
+    # define boundary coordinates
+    minlat=float(limit[0])
+    maxlat=float(limit[1])
+    minlon=float(limit[2])
+    maxlon=float(limit[3])
+    
+    # pixel dimensions
+    lat_dim = int(1+round(((maxlat-minlat)/gsize)))
+    lon_dim = int(1+round(((maxlon-minlon)/gsize)))
+    
+    #set target netcdf file
+    ds = netCDF4.Dataset(filename, 'w',format='NETCDF4')
+    
+    #set global attributes
+    ds.ShortName = "AERDT_L3_MEASURES_QD_HH"
+    #ds.LongName = None
+    """
+    ds.VersionID = None
+    ds.GranuleID = None
+    ds.Format = "netCDF4"
+    ds.RangeBeginningDate = None
+    ds.RangeBeginningTime  = None
+    ds.RangeEndingDate = None
+    ds.RangeEndingTime = None
+    ds.IdentifierProductDOIAuthority = "https://dx.doi.org/ - product DOI authority "
+    ds.IdentifierProductDOI = None
+    ds.ProductionDateTime = None
+    ds.ProcessingLevel = "Level 3"
+    ds.Conventions = None
+    ds.NorthernmostLatitude = limit[1]
+    ds.SouthernmostLatitude = limit[0]
+    ds.WesternmostLongitude = limit[2]
+    ds.WesternmostLongitude = limit[3]
+    """
+    
+    # Create time, lat, lon, sensor dimensions
+    timed = ds.createDimension('time', None)
+    lat = ds.createDimension('lat', lat_dim) #latitude is fatitude (y)
+    lon = ds.createDimension('lon', lon_dim) # x
+    sensor = ds.createDimension('sensor', 6) #only used for SensorWeighting mask
+    
+    #set time variable to filename parse
+    times = ds.createVariable('time', 'f4', ('time',))
+    
+    #set lats and lons  (or rather y and x)
+    lats = ds.createVariable('latitude', 'f4', ('lat',), fill_value=-9999.) #latitude is fatitude
+    lons = ds.createVariable('longitude', 'f4', ('lon',), fill_value=-9999.)
+    sensor_var = ds.createVariable("sensors",'f4', ('sensor', ))
+    
+    #sensors metadata
+    sensor_var.long_name = "Sensors: MODIS-T, MODIS-A, VIIRS-SNP, ABI-G16, ABI-G17, AHI-H08"
+    
+    #latitude / longitude metadata
+    lats.valid_range = [-90.0, 90.0]
+    #lats._FillValue = -9999.
+    lats.standard_name = "latitude"
+    lats.long_name = "Geodectic Latitude"
+    lats.units = "degree_north"
+    lats.scale_factor = 1.
+    lats.add_offset = 0.
+    lats.Parameter_Type = "Equal angle grid center location"
+    lats.Geolocation_Pointer = "Geolocation data not applicable" 
+    lats._CoordinateAxisType = "Lat"
+    
+    lons.valid_range = [-180.0, 180.0]
+    #lons._FillValue = -9999.
+    lons.standard_name = "longitude"
+    lons.long_name = "Geodectic Longitude"
+    lons.units = "degree_east"
+    lons.scale_factor = 1.
+    lons.add_offset = 0.
+    lons.Parameter_Type = "Equal angle grid center location"
+    lons.Geolocation_Pointer = "Geolocation data not applicable" 
+    lons._CoordinateAxisType = "Lon"
+
+    #bounds for lats and lons
+    lats[:] = np.arange(0,lat_dim)*gsize+minlat
+    lons[:] = np.arange(0,lon_dim)*gsize+minlon
+    
+    # unknown number of sensors, save values to list
+    values = []
+    sensors = {}
+
+    # instantiate empty arrays for summary statistics
+    indata_temp = []
+    inlat_temp = []
+    inlon_temp = []
+    
+    # Solar zenith angle 
+    name = "Solar_Zenith_Angle"
+    solar_zenith_variable = ds.createVariable(name, 'f4', ('time', 'lat', 'lon', ), fill_value=-9999)
+    solar_zenith_variable.long_name = "Solar Zenith Angle at the center of grid calculated for central time of the file"
+    solar_zenith_variable.units = "degree"
+    solar_zenith_variable.valid_range = [ 0, 18000]
+    solar_zenith_variable.scale_factor = 0.01
+    solar_zenith_variable.add_offset = 0
+    
+    solar_zenith_variable[0, :, :] = solar_zenith.get_SZA_array(limit, gsize, time_start, time_diff)
+    
+    # for calculating LEOGEO statistics
+    # LEOGEO: Mean, STD, NumberOfSensors, SensorWeighting, TotalPixels
+    # index of value corresponds to individual sensor
+    #leogeo_stats = {"Mean": [], "STD": [], "TotalPixels":[]}
+    leogeo_stats_arr = {} #contains leogeo_stats as value, geophys as key
+    #sensor_idx_stats = {"NumberOfSensors":[], "SensorWeighting":[]}
+    #sensor_idx = {} #key = sensor name, value = sensoridx
+    sensor_idx_arr = {} #key = geophys value, value = sensor_idx
+    
+    #run through and assign gridded data to sensor variable
+    # filenames are in the form:
+    # [[time0: [sat1], [sat2], ... ], ...[timek: [sat1], [sat2], ....]] 
+    # we assume we receive a signle dict for a time interval though
+    for i, s_name in enumerate(filelist.keys()): 
+        start_timer = time.time()
+
+        for s in filelist.get(s_name):
+            print("WORK SENSOR: ", s_name)
+
+            L2FID,GeoID,PhyID = sat_data_input.open_file(str(s))
+
+            # check for hdf files 
+            if (str(s).split(".")[-1] == "hdf"):
+                geo_list = ['Latitude', 'Longitude']
+                lat,lon,phy_vars, meta = filter_data.filter_data_hdf(GeoID, PhyID, geo_list, phy_list, phy_hdf)
+                L2FID.end()
+                
+            else: #netcdf
+                geo_list = ['latitude', 'longitude']
+                lat,lon,phy_vars, meta = filter_data.filter_data_nc(GeoID, PhyID, geo_list, phy_list, phy_nc)
+                L2FID.close()
+            
+            # statistics appending for this sensor
+            # index for arrays = geophysical variable indices
+            for count, p_var in enumerate(phy_list):
+                
+                #create empty array for geophysical variable
+                if len(indata_temp) < count+1:
+                    indata_temp.append([])
+                    inlat_temp.append([])
+                    inlon_temp.append([])
+                
+                indata_temp[count] = ma.concatenate([indata_temp[count], phy_vars[count]])
+                inlat_temp[count] = ma.concatenate([inlat_temp[count], lat[count]])
+                inlon_temp[count] = ma.concatenate([inlon_temp[count], lon[count]])
+        # end sensor concatenations
+        # indata = [[geovar data 1], [geovar data 2], ... , [geovar data n]]
+        
+        # grid parameters
+        # individual sensor statistics
+        for j, p_vars in enumerate(phy_list):
+            
+            #special metadata and statistic calculations for AOD
+            # values that need LEOGEO statistic calculations
+            if not("Sensor_Zenith" in p_vars or "Scattering_Angle" in p_vars):#"Optical_Depth_Land_And_Ocean" in p_vars:
+                aod_statistics = ["Mean", "STD", "Pixels"]
+                avgtau,stdtau,grdlat,grdlon,mintau,maxtau,count,sumtau = gridding.grid(limit,float(gsize),indata_temp[j],inlat_temp[j],inlon_temp[j])
+                #concatenate AOD data for leogeo stats later
+                
+                for aod_stat in aod_statistics:
+                    
+                    index = len(values) #i * len(phy_list) + j
+                    aod_long = meta[j]["long_name"]
+                    name = naming_conventions.nc_var_name(p_vars, s_name, aod_stat) #str(s_name+"_"+p_vars)
+                    values.append(ds.createVariable(name, 'f4', ('time', 'lat', 'lon', ), fill_value=meta[j]["_FillValue"]))
+                    
+                    # metadata
+                    values[index].units = meta[j]["units"]
+                    values[index].valid_range = meta[j]["valid_range"]
+                    values[index].long_name = naming_conventions.nc_long_name(p_vars, s_name, aod_stat, aod_long)#meta[j]["long_name"]
+                    values[index].scale_factor = meta[j]["scale_factor"]
+                    values[index].add_offset = meta[j]["add_offset"]
+                    values[index].Parameter_Type = meta[j]["Parameter_Type"]
+
+                    
+                    # instantiate the dictionary for statistics
+                    if not p_vars in leogeo_stats_arr:
+                        leogeo_stats_arr[p_vars] = {"Mean": [], "STD": [], "TotalPixels":[]}
+                        
+                        
+                    # make sure key is in dict 
+                    # instantiation
+                    if not p_vars in sensors:
+                        sensors[p_vars] = []
+                    
+                    if not p_vars in sensor_idx_arr:
+                        sensor_idx_arr[p_vars] = {}
+                    
+                    #statistics to be added
+                    if aod_stat== "Mean":
+                        rotated = list(zip(*avgtau))[::-1]
+                        leogeo_stats_arr[p_vars] ["Mean"].append(np.flipud(rotated)) #for leogeo calculation later
+                        
+                        #sensor idx (Sensor Weighting)
+                        temp_a = np.flipud(rotated)
+                        """
+                        print("\nBEFORE SENSOR IDX \n")
+                        print(temp_a)
+                        print("Fill Value: ", meta[j]["_FillValue"])"""
+                        temp_a[temp_a > -9999] = 1
+                        temp_a[temp_a <= meta[j]["_FillValue"]] = 0
+                        temp_a[np.isnan(temp_a)] = 0
+                        #sensor_idx[naming_conventions.get_sensor(s_name)] = temp_a
+                        sensor_idx_arr[p_vars][naming_conventions.get_sensor(s_name)] = temp_a
+                        """
+                        print("\nSENSOR IDX\n")
+                        print(sensor_idx[naming_conventions.get_sensor(s_name)])
+                        print("\n")
+                        """
+                    
+                    
+                        
+                    elif aod_stat == "STD":
+                        rotated = list(zip(*stdtau))[::-1]
+                        
+                        leogeo_stats_arr[p_vars]["STD"].append(np.flipud(rotated))
+                        
+                        #leogeo_stats["STD"].append(np.flipud(rotated)) #for leogeo calculation later
+                    elif aod_stat == "Pixels":
+                        rotated = list(zip(*count))[::-1]
+                        
+                        leogeo_stats_arr[p_vars]["TotalPixels"].append(np.flipud(rotated))
+                        #leogeo_stats["TotalPixels"].append(np.flipud(rotated)) #for leogeo calculation later
+                    else:
+                        rotated = list(zip(*avgtau))[::-1]
+                        
+                        leogeo_stats_arr[p_vars]["Mean"].append(np.flipud(rotated))
+                        #leogeo_stats["Mean"].append(np.flipud(rotated)) #for leogeo calculation later
+                        print("STATISTIC ERROR")
+                    
+                    values[index][0, :, :] = np.flipud(rotated) # make it 2dimensional
+                    sensors[p_vars].append(np.flipud(rotated)) #add it to complete dataset for LEOGEO calculations
+
+                #time
+                end_timer = time.time()
+                print("Sensor: ",s_name ," time: ", end_timer - start_timer)
+                
+            else:  #phy_var is NOT AOD
+
+                avgtau,stdtau,grdlat,grdlon,mintau,maxtau,count,sumtau = gridding.grid(limit,float(gsize),indata_temp[j],inlat_temp[j],inlon_temp[j])
+
+                index = len(values) #i * len(phy_list) + j
+                name = naming_conventions.nc_var_name(p_vars, s_name) #str(s_name+"_"+p_vars)
+                values.append(ds.createVariable(name, 'f4', ('time', 'lat', 'lon', ), fill_value=meta[j]["_FillValue"]))
+                
+                # metadata
+                values[index].units = meta[j]["units"]
+                values[index].valid_range = meta[j]["valid_range"]
+                values[index].long_name = naming_conventions.nc_long_name(p_vars, s_name)#meta[j]["long_name"]
+                values[index].scale_factor = meta[j]["scale_factor"]
+                values[index].add_offset = meta[j]["add_offset"]
+                values[index].Parameter_Type = meta[j]["Parameter_Type"]
+
+                """
+                # make sure key is in dict 
+                # instantiation
+                if not p_vars in sensors:
+                    sensors[p_vars] = []
+                """
+                
+                rotated = list(zip(*avgtau))[::-1]
+                
+                values[index][0, :, :] = np.flipud(rotated) # make it 2dimensional
+                #sensors[p_vars].append(np.flipud(rotated)) #add it to complete dataset for LEOGEO calculations
+
+                #time
+                end_timer = time.time()
+                print("Sensor: ",s_name ," time: ", end_timer - start_timer)
+        
+        # reset
+        indata_temp = []
+        inlat_temp = []
+        inlon_temp = []
+        
+    # end individual sensor gridding and adding to nc
+    
+    # calculate LEOGEO statistics
+    # LEOGEO: Mean, STD, NumberOfSensors, SensorWeighting, TotalPixels
+    # index of value corresponds to individual sensor
+    # leogeo_stats = {"Mean": [], "STD": [], "TotalPixels":[]}
+    # sensor_idx = {} #key = sensor name, value = sensoridx
+    leogeo_calculated_statistics = []
+    number_of_sensors_variable = []
+    sensor_idx_variable = []
+    
+    #print("\nLEOGEO STATS\n")
+    #print(leogeo_stats)
+    
+    # FilteredQA_550
+    # Mean, STD, and TotalPixels stat calculations
+    j = 0
+    leogeo_index = 0
+    for p_var in phy_list:
+        if p_var in leogeo_stats_arr: #go through each geophysical variable
+        
+            leogeo_stats = leogeo_stats_arr[p_var] #current dict 
+            leogeo_calculated_statistics.append([])
+            
+            i=0
+            # mean, std, pixel statistics
+            for statistic in leogeo_stats:
+                name = naming_conventions.nc_var_name(p_var, "LEOGEO", statistic)
+                
+                # avgtau = np.nanmean(np.array(sensors.get(p_vars)), axis=0 )
+                stat_values = naming_conventions.calculate_statistic(statistic, 
+                                                                    leogeo_stats["Mean"],
+                                                                    leogeo_stats["STD"],
+                                                                    leogeo_stats["TotalPixels"])
+                
+                leogeo_calculated_statistics[leogeo_index].append(ds.createVariable(name, 'f4', ('time', 'lat', 'lon', )))
+                leogeo_calculated_statistics[leogeo_index][i][0, :, :] = stat_values
+                leogeo_long = meta[leogeo_index]["long_name"]
+                leogeo_calculated_statistics[leogeo_index][i].long_name = naming_conventions.nc_long_name(p_var, "LEOGEO", 
+                                                                                            statistic, leogeo_long)
+                
+                i+=1
+            
+                
+            # Sensor IDX calculations
+            # SensorWeighting and NumberOfSensors
+            # sensor_idx = {} #key = sensor name, value = sensoridx
+            
+            sensor_order = ["MODIS_T", "MODIS_A", "VIIRS_SNPP", "ABI_G16", "ABI_G17", "AHI_H08"]
+            name = naming_conventions.nc_var_name(p_var,"LEOGEO", "SensorWeighting")
+            sensor_idx_variable.append(ds.createVariable(name, 'f4', ('sensor', 'lat', 'lon', )))
+            sensor_idx_variable[leogeo_index].long_name = naming_conventions.nc_long_name(p_var, "LEOGEO",
+                                                                            "SensorWeighting", meta[j]["long_name"])
+            
+            number_of_sensors = []
+            
+            i = 0
+            for satellite in sensor_order:
+                #add number of sensors together
+                if len(number_of_sensors)==0:
+                    number_of_sensors = sensor_idx_arr[p_var][satellite]
+                else:
+                    number_of_sensors = number_of_sensors + sensor_idx_arr[p_var][satellite]
+                
+                #save for sensor layer
+                sensor_idx_variable[leogeo_index][i, :, :] = sensor_idx_arr[p_var][satellite]
+                i += 1
+            
+            name = naming_conventions.nc_var_name(p_var, "LEOGEO", "NumberOfSensors")
+            number_of_sensors_variable.append(ds.createVariable(name, 'f4', ('time', 'lat', 'lon', )))   
+            number_of_sensors_variable[leogeo_index][0, :, :] = number_of_sensors
+            number_of_sensors_variable[leogeo_index].long_name = naming_conventions.nc_long_name(p_var, "LEOGEO",
+                                                                              "NumberOfSensors", meta[j]["long_name"])
+            leogeo_index+=1    
+        j += 1
+    
+    """
+    # put in gridded statistics
+    # avgtau,stdtau,grdlat,grdlon,mintau,maxtau,count,sumtau = gridding.grid(limit,float(gsize),indata_stat,inlat_stat,inlon_stat)
+    sensor_id = []
+    shape = (len(np.arange(0,lat_dim)*gsize+minlat), len(np.arange(0,lon_dim)*gsize+minlon))
+    avg = []
+    # all sensors combined statistics (LEOGEO)
+    for k, p_vars in enumerate(phy_list):
+        # averages
+        try:
+            avgtau = np.nanmean(np.array(sensors.get(p_vars)), axis=0 )
+            # other statistics nan
+            # Number of Sensors
+            sensor_id_x = np.zeros(shape)
+            for i in range(len(sensors[p_vars])):
+                sensor_id_x = sensor_id_x + (np.array(sensors.get(p_vars)[i])*0+1)
+                #print(np.nan_to_num(np.array(sensors.get(p_vars)[i])*0+1, -1))
+            avg_name = str("merge_avgtau_" + p_vars)
+            avg.append(ds.createVariable(avg_name, 'f4', ('time', 'lat', 'lon', )))
+            avg[k][0, :, :] = avgtau
+            # metadata
+            # naming convention, units should be consistent
+            # read from configuration file
+            # follow netcdf conventions
+            # avg[k].units = meta["units"]
+            # avg[k].valid_range = meta["valid_range"]
+            # avg[k]._FillValue = meta["_FillValue"]
+            # avg[k].long_name = meta["long_name"]
+            # avg[k].scale_factor = meta["scale_factor"]
+            # avg[k].add_offset = meta["add_offset"]
+            # avg[k].Parameter_Type = meta["Parameter_Type"]
             sensor_id_name = str("sensor_id_x_" + p_vars)
             sensor_id.append(ds.createVariable(sensor_id_name, 'f4', ('time', 'lat', 'lon', )))
             sensor_id[k].units = 'unknown'
