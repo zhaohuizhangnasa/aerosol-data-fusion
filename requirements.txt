@@ -2,3 +2,7 @@ numpy
 pyhdf
 netCDF4
 pyyaml
+pandas
+python-math
+numba
+pysolar
