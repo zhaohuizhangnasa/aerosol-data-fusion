@@ -77,7 +77,7 @@ def nc_long_name(geophys_name, sensor_name, statistic = None, aod_long = None):
     #LEOGEO
     else:
         curr_stat = ""
-        for stat in statistics_references_long:
+        for stat in statistics_references_long_LEOGEO:
             if statistic == stat:
                 name = statistics_references_long_LEOGEO[stat]
                 curr_stat = statistic
@@ -142,4 +142,4 @@ if __name__ == '__main__':
     data2 = [[[10, 10], [10, 10]], [[0, 10], [10, 10]], [[10, 10], [10, 10]]]
     data3 = [[[3, 2], [0, 0]], [[1, 4], [1, -5]], [[1, 0], [0, 0]]]
     
-    print(nc_long_name("Optical_Depth_Land_And_Ocean", "LEOGEO", "NumberOfSensors", "asdfsdf"))
+    print(nc_long_name("Optical_Depth_Land_And_Ocean", "LEOGEO", "STD", "asdfsdf"))

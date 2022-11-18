@@ -766,15 +766,16 @@ def grid_nc_sensor_statistics_metadata2(limit, gsize, geo_list, phy_list, fileli
     #set time variable to filename parse
     times = ds.createVariable('time', np.short, ('time',))
     times.long_name = "time"
+    time.calendar = "standard"
     #time.units = "minutes since "+str(time_start)
     
     #set lats and lons  (or rather y and x)
-    lats = ds.createVariable('latitude', np.short, ('lat',), fill_value=-9999.) #latitude is fatitude
-    lons = ds.createVariable('longitude', np.short, ('lon',), fill_value=-9999.)
+    lats = ds.createVariable('latitude', 'f4', ('lat',), fill_value=-9999.) #latitude is fatitude
+    lons = ds.createVariable('longitude', 'f4', ('lon',), fill_value=-9999.)
     sensor_var = ds.createVariable("sensors", np.short, ('sensor', ))
     
     #sensors metadata
-    sensor_var.long_name = "Sensors: MODIS-T, MODIS-A, VIIRS-SNP, ABI-G16, ABI-G17, AHI-H08"
+    sensor_var.long_name = "Sensors: 1- MODIS-T, 2 - MODIS-A, 3 - VIIRS-SNP, 4 - ABI-G16, 5 - ABI-G17, 6 - AHI-H08"
     sensor_var.units = "None"
     
     #latitude / longitude metadata
@@ -850,7 +851,7 @@ def grid_nc_sensor_statistics_metadata2(limit, gsize, geo_list, phy_list, fileli
     solar_zenith_variable.units = "degree"
     solar_zenith_variable.valid_range = [ 0, 18000]
     solar_zenith_variable.scale_factor = 0.01
-    solar_zenith_variable.add_offset = int(0)
+    #solar_zenith_variable.add_offset = float(0)
     #netCDF4.nc_put_att(ds, solar_zenith_variable, 'add_offset', 'f4', 1, 0)
     
     
@@ -929,6 +930,7 @@ def grid_nc_sensor_statistics_metadata2(limit, gsize, geo_list, phy_list, fileli
                 avgtau,stdtau,grdlat,grdlon,mintau,maxtau,count,sumtau = gridding.grid(limit,float(gsize),indata_temp[j],inlat_temp[j],inlon_temp[j])
                 #concatenate AOD data for leogeo stats later
                 print("avgtau: x", len(avgtau), " y: ",len(avgtau[0]))
+                
                 for aod_stat in aod_statistics:
                     
                     index = len(values) #i * len(phy_list) + j
@@ -940,9 +942,12 @@ def grid_nc_sensor_statistics_metadata2(limit, gsize, geo_list, phy_list, fileli
                     values[index].units = "1"#meta[j]["units"]
                     values[index].valid_range = meta[j]["valid_range"]
                     values[index].long_name = naming_conventions.nc_long_name(p_vars, s_name, aod_stat, aod_long) + " for the grid" #meta[j]["long_name"]
-                    values[index].scale_factor = round(meta[j]["scale_factor"], 2)
-                    values[index].add_offset = meta[j]["add_offset"]
                     values[index].Parameter_Type = meta[j]["Parameter_Type"]
+                    
+                    # check if pixels to add add_offset or scale_factor or not
+                    if not(aod_stat in "Pixels"):
+                        values[index].scale_factor = round(meta[j]["scale_factor"], 3)
+                        values[index].add_offset = meta[j]["add_offset"]
 
                     
                     # instantiate the dictionary for statistics
@@ -1019,7 +1024,7 @@ def grid_nc_sensor_statistics_metadata2(limit, gsize, geo_list, phy_list, fileli
                 values[index].units = "degree"#meta[j]["units"]
                 values[index].valid_range = meta[j]["valid_range"]
                 values[index].long_name = naming_conventions.nc_long_name(p_vars, s_name)#meta[j]["long_name"]
-                values[index].scale_factor = round(meta[j]["scale_factor"], 2)
+                values[index].scale_factor = round(meta[j]["scale_factor"], 3)
                 values[index].add_offset = meta[j]["add_offset"]
                 values[index].Parameter_Type = meta[j]["Parameter_Type"]
 
@@ -1079,17 +1084,18 @@ def grid_nc_sensor_statistics_metadata2(limit, gsize, geo_list, phy_list, fileli
                                                                     leogeo_stats["STD"],
                                                                     leogeo_stats["TotalPixels"])
                 
-                leogeo_calculated_statistics[leogeo_index].append(ds.createVariable(name, np.short, ('time', 'lat', 'lon', ), fill_value=-9999))
+                leogeo_calculated_statistics[leogeo_index].append(ds.createVariable(name, np.short, ('time', 'lat', 'lon', )))
                 leogeo_calculated_statistics[leogeo_index][i][0, :, :] = stat_values
                 leogeo_long = meta[leogeo_index]["long_name"]
                 leogeo_calculated_statistics[leogeo_index][i].long_name = naming_conventions.nc_long_name(p_var, "LEOGEO", 
                                                                                             statistic, leogeo_long) + " for the grid"
                 
                 # metadata
-                leogeo_calculated_statistics[leogeo_index][i].units = "degree"#meta[leogeo_index]["units"]
+                leogeo_calculated_statistics[leogeo_index][i].units = "1"#"degree"#meta[leogeo_index]["units"]
                 leogeo_calculated_statistics[leogeo_index][i].valid_range = meta[leogeo_index]["valid_range"]
-                leogeo_calculated_statistics[leogeo_index][i].scale_factor = round(meta[leogeo_index]["scale_factor"], 2)
-                leogeo_calculated_statistics[leogeo_index][i].add_offset = meta[leogeo_index]["add_offset"]
+                if not("Pixels" in leogeo_stats):
+                    leogeo_calculated_statistics[leogeo_index][i].scale_factor = round(meta[leogeo_index]["scale_factor"], 3)
+                    leogeo_calculated_statistics[leogeo_index][i].add_offset = meta[leogeo_index]["add_offset"]
                 
                 i+=1
             
