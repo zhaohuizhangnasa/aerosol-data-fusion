@@ -77,7 +77,7 @@ def filter_data_nc(GeoID,PhyID,geo_list,phy_list, phy_nc = None):
     phy_vars = np.array(phy_vars) * float(phy['scale_factor'][0]) + float(phy['add_offset'][0])
     #print("latitude:", len(lat))
     #print("Physical:", len(phy_vars))
-    print("Metadata: ", metadata)
+    #print("Metadata: ", metadata)
 
     # probably should put in a check that lat lon phys has same length
     # sometimes phys var may differ between aerosol optical depth and angle
@@ -155,7 +155,7 @@ def filter_data_hdf(GeoID,PhyID,geo_list,phy_list, phy_hdf = None):
     phy_vars = np.array(phy_vars) * float(phy['scale_factor'][0]) + float(phy['add_offset'][0])
     #print("latitude:", len(lat))
     #print("Physical:", len(phy_vars))
-    print("Metadata: ", metadata)
+    #print("Metadata: ", metadata)
 
     # probably should put in a check that lat lon phys has same length
     # sometimes phys var may differ between aerosol optical depth and angle

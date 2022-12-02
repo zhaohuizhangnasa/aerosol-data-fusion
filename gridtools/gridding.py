@@ -56,8 +56,7 @@ def grid(limit,gsize,indata,inlat,inlon): #valid_range
     grdlon=np.full([xdim,ydim],-9999.0)
 
     # Run on CPU if no GPU is available
-    # For now, run on CPU before GPU bug is resolved
-    if (True): #(len(cuda.list_devices()) == 0 or len(indata) == 0)
+    if ((len(cuda.list_devices()) == 0 or len(indata) == 0)):
         for ii in range(len(indata)):
             #check within bounds
             # indata should be filtered based on range (not 0, 5 but rather valid_range)
@@ -77,6 +76,7 @@ def grid(limit,gsize,indata,inlat,inlon): #valid_range
                     maxtau[i,j]=indata[ii]
                     
                 #print("updated: ", sumtau[i,j], mintau[i,j], maxtau[i,j])
+
         for i in range(xdim):
             for j in range(ydim):
                 grdlon[i,j]=dx*i+minlon
@@ -113,18 +113,15 @@ def grid(limit,gsize,indata,inlat,inlon): #valid_range
     # Run first kernel
     tpb = (256)
     bpg = (int(np.ceil(len(indata) / tpb)))
-    print("indata " + str(len(indata)))
-    print("tpb " + str(tpb))
-    print("bpg " + str(bpg))
     grid_gpu_1[bpg, tpb](gsize, ydim, len(indata),\
-        d_indata, d_limit, d_inlat, d_inlon, d_sumtau, d_count, d_mintau, d_maxtau)
+        d_indata, d_limit, d_inlat, d_inlon, d_sumtau, d_sqrtau, d_count, d_mintau, d_maxtau)
 
     # Run second kernel
     # Threads per block
     tpb = (16, 16)
     # Blocks per grid
-    bpg_x = int(np.ceil(xdim / tpb[0]))
-    bpg_y = int(np.ceil(ydim / tpb[1]))
+    bpg_x = int(np.ceil(ydim / tpb[0]))
+    bpg_y = int(np.ceil(xdim / tpb[1]))
     bpg = (bpg_x, bpg_y)
     grid_gpu_2[bpg, tpb](gsize, minlon, minlat, xdim, ydim,\
         d_grdlon, d_grdlat, d_count, d_avgtau, d_sumtau, d_sqrtau, d_stdtau, d_mintau, d_maxtau)
@@ -147,7 +144,7 @@ def grid(limit,gsize,indata,inlat,inlon): #valid_range
 
 @cuda.jit
 def grid_gpu_1(gsize, ydim, indata_length,\
-    indata, limit, inlat, inlon, sumtau, count, mintau, maxtau):
+    indata, limit, inlat, inlon, sumtau, sqrtau, count, mintau, maxtau):
     # Establish thread and block indices
     t = cuda.threadIdx.x
     #-------------------------
@@ -175,7 +172,7 @@ def grid_gpu_1(gsize, ydim, indata_length,\
             # do not take nan values into account
             # nans should not be counted
             cuda.atomic.add(sumtau, ij, indata[idx])
-            cuda.atomic.add(sumtau, ij, indata[idx]**2)
+            cuda.atomic.add(sqrtau, ij, indata[idx]**2)
             cuda.atomic.add(count, ij, 1)
             cuda.atomic.min(mintau, ij, indata[idx])
             cuda.atomic.max(maxtau, ij, indata[idx])
@@ -204,18 +201,10 @@ def grid_gpu_2(gsize, minlon, minlat, xdim, ydim,\
         grdlon[idx] = gsize*row + minlon
         grdlat[idx] = gsize*col + minlat
         if count[idx] > 0:
-            avgtau[idx] = sumtau[idx] / count[idx]
-            para1=(1/count[idx])*(sqrtau[idx])+(count[idx])*avgtau[idx]-2*(avgtau[idx])*(sumtau[idx])
+            avgtau[idx] = sumtau[idx] / float(count[idx])
+            para1=(float(1)/float(count[idx]))*(sqrtau[idx])+(count[idx])*avgtau[idx]-2*(avgtau[idx])*(sumtau[idx])
             if para1 > 0:
                 stdtau[idx] = math.sqrt(para1)
-        
-        # Fill values
-        #if mintau[idx] == 10:
-        #    mintau[idx] = None
-        #if maxtau[idx] == -1:
-        #    maxtau[idx] = None
-        #if avgtau[idx] == -1:
-        #    avgtau[idx] = None
 
 
 # filelist - list of sensor names we want to grid here
