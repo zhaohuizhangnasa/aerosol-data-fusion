@@ -73,7 +73,8 @@ def nc_long_name(geophys_name, sensor_name, statistic = None, aod_long = None):
         for sensor_key in sensor_references_long: #add appropriate sensor name
             if sensor_key in sensor_name:
                 name = name + " " + sensor_references_long[sensor_key] 
-                name = name + " " + aod_long#" AOD at 0.55 micron (Optical_Depth_Land_And_Ocean) for both ocean (Average) (Quality flag = 1, 2, 3)  and land (corrected) (Quality flag = 3) for the grid "
+                if aod_long != None:
+                    name = name + " " + aod_long#" AOD at 0.55 micron (Optical_Depth_Land_And_Ocean) for both ocean (Average) (Quality flag = 1, 2, 3)  and land (corrected) (Quality flag = 3) for the grid "
     #LEOGEO
     else:
         curr_stat = ""
@@ -84,7 +85,8 @@ def nc_long_name(geophys_name, sensor_name, statistic = None, aod_long = None):
         for sensor_key in sensor_references_long: #add appropriate sensor name
             if sensor_key in sensor_name:
                 #name = name + " " + sensor_references_long[sensor_key] 
-                name = name + " " + aod_long#"
+                if aod_long != None:
+                    name = name + " " + aod_long
                 if curr_stat == "SensorWeighting":
                     name = name + ", the default value is 1.0 if sensor is available and 0.0 if sensor is not available, the sensor dimension order is MODIS-T, MODIS-A, VIIRS-SNP, ABI-G16, ABI-G17, AHI-H08"
     return name
@@ -102,14 +104,22 @@ def get_sensor(s_name):
 # order is always mean, std, count
 def calculate_statistic(statistic, data, data2 = None, data3 = None):
     if statistic == "Mean":
-        """
-        count = np.array(data3)
+        data = np.nan_to_num(np.array(data))
         
-        numerator = np.sum(np.array(data) * count, axis=0)
-        denominator = np.sum(count, axis=0)
-        denominator[denominator == 0] = None
-        avgtau = numerator / denominator"""
-        avgtau = np.nanmean(np.array(data), axis=0 )
+        #print("data dimensions")
+        #print(len(data))
+        #print(len(data[0]))
+        #count = np.array(data3)
+        
+        #numerator = np.sum(np.array(data) , axis=0) #* count, axis=0)
+        #denominator = np.sum(np.array(data3), axis=0 )
+        #denominator[denominator == 0] = None
+        #avgtau = numerator / denominator
+        data[data<=-9999]=np.nan
+        avgtau = np.nanmean(np.array(data), axis=0 ) # [ [avgtau for modis a], [avgtau .. ]  ]
+    
+        
+        #avgtau = np.nanmean(np.array(data), axis=0 )
         return avgtau
     
     # https://stats.stackexchange.com/questions/55999/is-it-possible-to-find-the-combined-standard-deviation
@@ -143,3 +153,5 @@ if __name__ == '__main__':
     data3 = [[[3, 2], [0, 0]], [[1, 4], [1, -5]], [[1, 0], [0, 0]]]
     
     print(nc_long_name("Optical_Depth_Land_And_Ocean", "LEOGEO", "STD", "asdfsdf"))
+    data = np.array([[[0,1],[2,3]], [[1,2], [3, 4]]])
+    print(np.nanmean(np.array(data), axis=0 ))

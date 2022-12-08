@@ -7,6 +7,12 @@ import datetime
 import numpy as np
 import pandas as pd
 
+import numba as nb
+from numba import jit
+from numba import cuda
+
+from joblib import Parallel, delayed
+
 """
 def get_SZA(row):
     time_obj = pd.to_datetime(row['Date_UTC']) + pd.to_timedelta(row['Time_UTC'], unit='h')
@@ -80,8 +86,23 @@ def get_SZA_vec(limit, gsize, time_start, time_diff):
     get_alt_vec = np.vectorize(get_altitude_tup, excluded=['when'])
     
     return get_alt_vec(lat=lats, lon=lons, when=time_obj)
+
+#@jit(nopython=True)
+def get_SZA_parallelized(limit, gsize, time_start, time_diff,num_cores=1):
+    # limit = [min lat, max lat, min lon, max lon]
+    max_lat = int(1+round(((limit[1]-limit[0])/gsize)))
+    max_lon = int(1+round(((limit[3]-limit[2])/gsize)))
+            
+    #solar_zenith = Parallel(n_jobs=num_cores)([get_SZA(limit[0] +  i * gsize, limit[2] + j * gsize, time_start, time_diff) for j in range(0, max_lon)] for i in range(0, max_lat))
+    #res = Parallel(n_jobs=1)(delayed(math.sqrt)(i**2) for i in range(10))
+    res = Parallel(n_jobs = num_cores)( 
+            delayed( get_SZA )(limit[0] +  i * gsize, limit[2] + j * gsize, time_start, time_diff) 
+                                    for i in range(0, max_lat)
+                                    for j in range(0, max_lon)
+        )
     
-    
+    res = np.reshape(res, (-1, max_lon))
+    return res#solar_zenith
 
 if __name__ == '__main__':
     limit = [-90, 90, -180, 180]
@@ -96,13 +117,20 @@ if __name__ == '__main__':
     # pysolar library
     print("\nPYSOLAR list comprehension:\n")
     start_time = time.time()
-    sza = get_SZA_array(limit, gsize, time_start, time_diff)
+    #sza = get_SZA_array(limit, gsize, time_start, time_diff)
     #print(sza)
-    print("--- %s seconds ---" % (time.time() - start_time))
+    #print("--- %s seconds ---" % (time.time() - start_time))
     
     
     print("\nSZAvectorized:\n")
     start_time = time.time()
-    a = get_SZA_vec(limit, gsize, time_start, time_diff)
-    #print(a)
+    #a = get_SZA_vec(limit, gsize, time_start, time_diff)
+    #print(len(a))
+    #print(a[1])
+    print("--- %s seconds ---" % (time.time() - start_time))
+    
+    print("\nParallelized")
+    start_time = time.time()
+    a = get_SZA_parallelized(limit, gsize, time_start, time_diff, -1)
+    print(a)
     print("--- %s seconds ---" % (time.time() - start_time))
