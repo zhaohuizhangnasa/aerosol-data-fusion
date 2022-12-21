@@ -6,3 +6,4 @@ pandas
 python-math
 numba
 pysolar
+joblib
