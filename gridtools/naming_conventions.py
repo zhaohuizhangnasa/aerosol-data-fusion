@@ -1,4 +1,5 @@
 # imports
+import netCDF4
 import numpy as np
 
 # for variable name
@@ -19,7 +20,7 @@ geophys_references_long = { "Sensor_Zenith":"Sensor Viewing Angle",
                       "AOD_AllQA_550":"", 
                       "AOD_FilteredQA_550":""}
 statistics_references_long = {"Mean":"Mean", 
-                              "STD":"Standard Deviation in",
+                              "STD":"Standard Deviation of",
                               "Pixels":"Number of Pixel used in calculating",
                               "TotalPixels":"Total number of level 2 pixels from all the sensors used in calculating mean gridded",
                               "SensorWeighting":"Weighting of each sensor used in calculating mean gridded"
@@ -27,7 +28,7 @@ statistics_references_long = {"Mean":"Mean",
 statistics_references_long_LEOGEO = {"Mean":"Mean of gridded LEO and GEO sensors", 
                               "STD":"Standard Deviation of gridded LEO and GEO sensors ",
                               "Pixels":"Number of Pixel used in calculating",
-                              "TotalPixels":"Total number of level 2 pixels from all the sensors used in calculating mean gridded mean gridded LEO_GEO",
+                              "TotalPixels":"Total number of level 2 pixels from all the sensors used in calculating mean gridded LEO_GEO",
                               "SensorWeighting":"Weighting of each sensor used in calculating mean gridded",
                               "NumberOfSensors": "Number of Sensors used in calculating mean gridded LEO_GEO",
                               "SensorWeighting": "Weighting of each sensor used in calculating mean gridded LEO_GEO"
@@ -82,6 +83,8 @@ def nc_long_name(geophys_name, sensor_name, statistic = None, aod_long = None):
             if statistic == stat:
                 name = statistics_references_long_LEOGEO[stat]
                 curr_stat = statistic
+                if statistic =="Mean" or statistic =="STD" or statistic =="Pixels" or statistic == "TotalPixels":
+                    name = name + " " + "AOD at 0.55 micron (Image_Optical_Depth_Land_And_Ocean) for both ocean (Average) and land (corrected) with all quality data (Quality flag = 0, 1, 2, 3)"
         for sensor_key in sensor_references_long: #add appropriate sensor name
             if sensor_key in sensor_name:
                 #name = name + " " + sensor_references_long[sensor_key] 
@@ -152,6 +155,11 @@ if __name__ == '__main__':
     data2 = [[[10, 10], [10, 10]], [[0, 10], [10, 10]], [[10, 10], [10, 10]]]
     data3 = [[[3, 2], [0, 0]], [[1, 4], [1, -5]], [[1, 0], [0, 0]]]
     
-    print(nc_long_name("Optical_Depth_Land_And_Ocean", "LEOGEO", "STD", "asdfsdf"))
-    data = np.array([[[0,1],[2,3]], [[1,2], [3, 4]]])
-    print(np.nanmean(np.array(data), axis=0 ))
+    print(nc_long_name("Optical_Depth_Land_And_Ocean", "LEOGEO", "TotalPixels"))
+    #data = np.array([[[0,1],[2,3]], [[1,2], [3, 4]]])
+    #print(np.nanmean(np.array(data), axis=0 ))
+    
+    path = "/mnt/c/Users/bobgr/Desktop/NASA Spring 2023/Gridtools Package (Code, README, inputs, outputs, examples, verification)/SampleOutputs 0000-0059 01-01-2020/"
+    filename = "XAERDT_L3_MEASURES_QD_HH.20200101.0000.V0.20230130.nc"
+    L2FID = netCDF4.Dataset(path+filename,'r',format='NETCDF4')
+    L2FID.close()
