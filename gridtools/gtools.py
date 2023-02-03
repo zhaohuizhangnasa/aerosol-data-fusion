@@ -325,6 +325,7 @@ def netCDF_yaml_config(file_name):
     outputfolder = file_io["output_location"]
     outputname = file_io["output_name"]
     
+    count= 0
     for f in split_files:
         #name = outputfolder + outputname + str(curr).replace(":", "-")+".nc"
         #XAERDT_L3_MEASURES_QD_HH.YYYYMMDD.HHMM.V0.ProcessingDate.nc
@@ -342,16 +343,19 @@ def netCDF_yaml_config(file_name):
         
         # grid files
         #grid_nc_sensor_statistics_metadata
+        count+=1
+        
         ds = grid_ncf.grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, f, name, curr, time_interval, phy_nc, phy_hdf, static_file)
         ds.close()
         print("CHECK 3")
+        print("CALL : ", count)
         #grid_ncf.grid_nc_sensor_statistics_metadata2(limit, gsize, geo_list, phy_list, f, name, curr, time_interval, phy_nc, phy_hdf, static_file)
         curr = curr + datetime.timedelta(minutes = int(time_interval))
 
     end_timer = time.time()
     print("Full execution time: ", end_timer - start_timer)
-    
 
+    
 
 def execute_file(filename):
     filelist, gsize, time_interval, start, end, output, geo_list, phy_list = fileparser.read_in_commands(filename)

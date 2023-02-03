@@ -101,8 +101,8 @@ def grid(limit,gsize,indata,inlat,inlon): #valid_range
     maxtau[maxtau==-1]=None
     avgtau[avgtau==-1]=None
     
-    print("GRIDDING MAX:")
-    print(np.array(avgtau).max())
+    #print("GRIDDING MAX:")
+    #print(np.array(avgtau).max())
     
     return avgtau,stdtau,grdlat,grdlon,mintau,maxtau,count,sumtau
 

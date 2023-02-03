@@ -379,13 +379,23 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
                     #manually set to fill_value
                     rotated = np.array(rotated)
                     print("VALID RANGE:", meta[j]["valid_range"][0], " TO ", meta[j]["valid_range"][1])
-                    rotated[rotated > meta[j]["valid_range"][1]+1] = -1000 #meta[j]["_FillValue"]
-                    rotated[rotated < meta[j]["valid_range"][0]-1] = -1000 # meta[j]["_FillValue"]
+                    rotated[rotated > meta[j]["valid_range"][1]+1] = -800#meta[j]["_FillValue"]
+                    rotated[rotated < meta[j]["valid_range"][0]-1] = -800 #meta[j]["_FillValue"]
                     
-                    print(np.flipud(rotated))
-                    values[index][0, :, :] = np.flipud(rotated) # make it 2dimensional
-                    sensors[p_vars].append(np.flipud(rotated)) #add it to complete dataset for LEOGEO calculations
+                    final_input = np.flipud(rotated).astype(np.short)
+                    print(final_input)
+                    #curr_sensor_value = values[index]
+                    #values[index][0, :, :] = values[index][0, :, :].astype(np.short)
+                    values[index][0, :, :] = final_input 
+                    values[index][0, :, :] = values[index][0, :, :].astype(np.short)
 
+                    # AOD print
+                    print("AFTER ASSIGNMENT: ",final_input)
+                    print("TYPE: ", values[index][0, :, :].dtype)
+                    print("AOD nc check: ", np.array(values[index][0, :, :] ))
+                    
+                    sensors[p_vars].append(np.flipud(rotated)) #add it to complete dataset for LEOGEO calculations
+                    
                 #time
                 end_timer = time.time()
                 print("Sensor: ",s_name ," time: ", end_timer - start_timer)
@@ -481,7 +491,7 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
                                                                     leogeo_stats["TotalPixels"])
                 leogeo_calculated_statistics[leogeo_index].append(ds.createVariable(name, np.short, ('time', 'lat', 'lon', ), fill_value = -9999 )) #1/29/2023 - added fill value
                 leogeo_calculated_statistics[leogeo_index][i][0, :, :] = stat_values
-                print("MAX STAT VALUE for ", statistic, ":", stat_values.max())
+                #print("MAX STAT VALUE for ", statistic, ":", stat_values.max())
                 leogeo_long = meta[leogeo_meta_index]["long_name"]
                 leogeo_calculated_statistics[leogeo_index][i].long_name = naming_conventions.nc_long_name(p_var, "LEOGEO", 
                                                                                             statistic) + " for the grid" #statistics_references_long
@@ -597,8 +607,9 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
     print("CHECK 1")
     #close file
     #ds.close()
-    #grid_close(ds)
+    #grid_close(ds)s
     print("CHECK 2")
+    
     
     return ds
     # output = 1 netcdf with six variables (one for each sensor) 
