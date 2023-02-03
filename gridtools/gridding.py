@@ -46,7 +46,7 @@ def grid(limit,gsize,indata,inlat,inlon): #valid_range
     sumtau=np.zeros((xdim,ydim)) # init 2d array map with zeros
     sqrtau=np.zeros((xdim,ydim))
     count=np.zeros((xdim,ydim))
-    mintau=np.full([xdim,ydim],10.0) # init 2d array map with defaults
+    mintau=np.full([xdim,ydim],5000.0) # init 2d array map with defaults
     maxtau=np.full([xdim,ydim],-100.0) # fill value, do not change min max
     avgtau=np.full([xdim,ydim],-9999.0) # write nans as fill values rather than nans
     stdtau=np.full([xdim,ydim],-9999.0)
@@ -66,9 +66,15 @@ def grid(limit,gsize,indata,inlat,inlon): #valid_range
             
             # do not take nan values into account
             # nans should not be counted
+            if indata[ii] > 5000:
+                #print("loc", ii)
+                #print("loc: ", i, " loc: ", j)
+                #print(indata[ii])
+                pass
             sumtau[i,j]=sumtau[i,j]+indata[ii]
             sqrtau[i,j]=sqrtau[i,j]+(indata[ii])**2
-            count[i,j]+=1
+            count[i,j]=count[i,j]+1
+            
             if indata[ii] < mintau[i,j]:
                 mintau[i,j]=indata[ii]
             if indata[ii] > maxtau[i,j]:
@@ -79,8 +85,13 @@ def grid(limit,gsize,indata,inlat,inlon): #valid_range
         for j in range(ydim):
             grdlon[i,j]=dx*i+minlon
             grdlat[i,j]=dx*j+minlat
+            
             if count[i,j] > 0:
                 avgtau[i,j]=sumtau[i,j]/count[i,j]
+                if avgtau[i,j] > 5000:
+                    #pass
+                    print("loc: ", i, " loc: ", j)
+                    print("SUM: ", sumtau[i,j], " COUNT:", count[i,j], "AVG:", avgtau[i,j])
                 para1=(1/count[i,j])*(sqrtau[i,j])+(count[i,j])*avgtau[i,j]-2*(avgtau[i,j])*(sumtau[i,j])
                 if para1 > 0:
                     stdtau[i,j]=np.sqrt(para1)
@@ -89,6 +100,9 @@ def grid(limit,gsize,indata,inlat,inlon): #valid_range
     mintau[mintau==10]=None
     maxtau[maxtau==-1]=None
     avgtau[avgtau==-1]=None
+    
+    print("GRIDDING MAX:")
+    print(np.array(avgtau).max())
     
     return avgtau,stdtau,grdlat,grdlon,mintau,maxtau,count,sumtau
 

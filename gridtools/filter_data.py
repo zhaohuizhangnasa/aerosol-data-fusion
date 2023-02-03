@@ -75,6 +75,9 @@ def filter_data_nc(GeoID,PhyID,geo_list,phy_list, phy_nc = None):
 
     # scale factors
     phy_vars = np.array(phy_vars) #* float(phy['scale_factor'][0]) + float(phy['add_offset'][0])
+    for p in phy_vars:
+        print("FINAL MAXES NC:", p.max())
+    
     #print("latitude:", len(lat))
     #print("Physical:", len(phy_vars))
     print("Metadata: ", metadata)
@@ -124,7 +127,12 @@ def filter_data_hdf(GeoID,PhyID,geo_list,phy_list, phy_hdf = None):
             lon1=[]
             
         #print("valid range: ", phy['valid_range'][p][0])
+        print("VARIABLE:", phy_list[p])
+        print("VALID RANGE: ",phy['valid_range'][p][0], " to ", phy['valid_range'][p][1])
         phy_vars1 = phy_vars1[np.logical_and(phy_vars1>=phy['valid_range'][p][0],phy_vars1<=phy['valid_range'][p][1])]
+        
+        print("AFTER FILTER MAX: ", phy_vars1.max())
+        print("AFTER FILTER MIN: ", phy_vars1.min())
         
         lat1 = np.array(lat1) * float(geo['scale_factor'][0]) + float(geo['add_offset'][0])
         lat.append(lat1)
@@ -152,7 +160,9 @@ def filter_data_hdf(GeoID,PhyID,geo_list,phy_list, phy_hdf = None):
         metadata.append(m)
 
     # scale factors
-    phy_vars = np.array(phy_vars)# * float(phy['scale_factor'][0]) + float(phy['add_offset'][0])
+    phy_vars = np.array(phy_vars) * float(phy['scale_factor'][0]) + float(phy['add_offset'][0])
+    for p in phy_vars:
+        print("FINAL MAXES HDF:", p.max())
     #print("latitude:", len(lat))
     #print("Physical:", len(phy_vars))
     print("Metadata: ", metadata)

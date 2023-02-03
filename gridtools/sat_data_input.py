@@ -12,7 +12,7 @@
 import netCDF4
 import os
 import sys
-
+import numpy as np
 
 import pyhdf
 from pyhdf import SD
@@ -302,6 +302,11 @@ def read_phy_data_hdf(L2PhyGroup, L2GeoGroup, var_list=None, var_hdf=None):
          phy['scale_factor'].append(metadata["scale_factor"])
          phy['add_offset'].append(metadata["add_offset"])
          phy['Parameter_Type'].append(metadata["Parameter_Type"])
+         
+         #display data
+         print("DATA")
+         data2 = np.array(data).flatten()
+         print(data2[data2!=-9999])
          
          
          

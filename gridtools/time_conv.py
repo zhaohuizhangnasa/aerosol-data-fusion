@@ -37,7 +37,7 @@ def filename_time(filename):
 
 # start represents the start time (datetime object)
 # end represents the end time (datetime object)
-# start and end are inclusive
+# start and end are inclusive (2/1/23 - should it be???)
 # interval is in minutes
 # intervals will be [start, start+interval] where first index is inclusive, second not
 def split_filetimes(filelist, start, end, interval):

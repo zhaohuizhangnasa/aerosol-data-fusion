@@ -34,6 +34,9 @@ import naming_conventions
 import solar_zenith
 import datetime
 
+def grid_close(ds):
+    ds.close()
+
 # filename - 'gridNet.nc' (this is what it saves to)
 # sat_files - list of satellite files to pull data from
 # saves all satellite sensor gridded data as separate variables
@@ -193,7 +196,7 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
                 x = ds.createVariable(name, variable.datatype, dimensions) #variable.dimensions)
                 #ds[name][:] = src[name][:]
                 ds[name][0, :, :] = src[name][:]
-                print(ds[name][:])
+                #print(ds[name][:])
                 # copy variable attributes all at once via dictionary
                 ds[name].setncatts(src[name].__dict__)
                 
@@ -204,8 +207,6 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
                 else:
                     ds[name].long_name = "Land_Sea_Flag (based on MOD03 Landsea mask 0 = Ocean, 1 = Land and ephemeral water 2 = Coastal)"
                     
-                
-                
         src.close()
     
     print("Done with static file transfer")
@@ -331,7 +332,8 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
                     
                     #statistics to be added
                     if aod_stat== "Mean":
-                        rotated = list(zip(*avgtau))[::-1]
+                        rotated = list(zip(*avgtau))[::-1] # check why zipped
+                        #print("AFTER GRIDDING: ", rotated)
                         leogeo_stats_arr[p_vars] ["Mean"].append(np.flipud(rotated)) #for leogeo calculation later
                         
                         #sensor idx (Sensor Weighting)
@@ -341,7 +343,7 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
                         print(temp_a)
                         print("Fill Value: ", meta[j]["_FillValue"])"""
                         temp_a[temp_a > -9999] = 1
-                        temp_a[temp_a <= meta[j]["_FillValue"]] = 0
+                        temp_a[temp_a <= meta[j]["_FillValue"]] = 0 #get rid of this 2/1
                         temp_a[np.isnan(temp_a)] = 0
                         #sensor_idx[naming_conventions.get_sensor(s_name)] = temp_a
                         sensor_idx_arr[p_vars][naming_conventions.get_sensor(s_name)] = temp_a
@@ -351,12 +353,12 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
                         print("\n")
                         """
                     
-                    
-                        
+                         
                     elif aod_stat == "STD":
                         rotated = list(zip(*stdtau))[::-1]
                         
                         leogeo_stats_arr[p_vars]["STD"].append(np.flipud(rotated))
+                        #print("AOD STD", rotated)
                         
                         #leogeo_stats["STD"].append(np.flipud(rotated)) #for leogeo calculation later
                     elif aod_stat == "Pixels":
@@ -371,6 +373,16 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
                         #leogeo_stats["Mean"].append(np.flipud(rotated)) #for leogeo calculation later
                         print("STATISTIC ERROR")
                     
+                    print("ROTATED AOD for", aod_stat)
+                    #print(np.flipud(rotated))
+                    
+                    #manually set to fill_value
+                    rotated = np.array(rotated)
+                    print("VALID RANGE:", meta[j]["valid_range"][0], " TO ", meta[j]["valid_range"][1])
+                    rotated[rotated > meta[j]["valid_range"][1]+1] = -1000 #meta[j]["_FillValue"]
+                    rotated[rotated < meta[j]["valid_range"][0]-1] = -1000 # meta[j]["_FillValue"]
+                    
+                    print(np.flipud(rotated))
                     values[index][0, :, :] = np.flipud(rotated) # make it 2dimensional
                     sensors[p_vars].append(np.flipud(rotated)) #add it to complete dataset for LEOGEO calculations
 
@@ -402,8 +414,17 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
                 """
                 
                 rotated = list(zip(*avgtau))[::-1]
+                #print("ROTATED NON AOD")
+                #print(np.flipud(rotated)) # print what is input into the variable
                 
-                values[index][0, :, :] = np.flipud(rotated) # make it 2dimensional
+                #manually set to fill_value
+                rotated = np.array(rotated)
+                print("VALID RANGE:", meta[j]["valid_range"][0], " TO ", meta[j]["valid_range"][1])
+                rotated[rotated > meta[j]["valid_range"][1]+1] = meta[j]["_FillValue"]
+                rotated[rotated < meta[j]["valid_range"][0]-1] = meta[j]["_FillValue"]
+                
+                
+                values[index][0, :, :] = np.flipud(rotated) # put into variable
                 #sensors[p_vars].append(np.flipud(rotated)) #add it to complete dataset for LEOGEO calculations
 
                 #time
@@ -445,21 +466,29 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
             for statistic in leogeo_stats:
                 name = naming_conventions.nc_var_name(p_var, "LEOGEO", statistic)
                 
+                stat_values = []
                 # avgtau = np.nanmean(np.array(sensors.get(p_vars)), axis=0 )
-                stat_values = naming_conventions.calculate_statistic(statistic, 
+                if not("Pixels" in statistic) or not("TotalPixels" in statistic):
+                    stat_values = naming_conventions.calculate_statistic(statistic, 
+                                                                    leogeo_stats["Mean"],
+                                                                    leogeo_stats["STD"],
+                                                                    leogeo_stats["TotalPixels"], 
+                                                                    round(meta[leogeo_meta_index]["scale_factor"], 3))
+                else:
+                    stat_values = naming_conventions.calculate_statistic(statistic, 
                                                                     leogeo_stats["Mean"],
                                                                     leogeo_stats["STD"],
                                                                     leogeo_stats["TotalPixels"])
-                
                 leogeo_calculated_statistics[leogeo_index].append(ds.createVariable(name, np.short, ('time', 'lat', 'lon', ), fill_value = -9999 )) #1/29/2023 - added fill value
                 leogeo_calculated_statistics[leogeo_index][i][0, :, :] = stat_values
+                print("MAX STAT VALUE for ", statistic, ":", stat_values.max())
                 leogeo_long = meta[leogeo_meta_index]["long_name"]
                 leogeo_calculated_statistics[leogeo_index][i].long_name = naming_conventions.nc_long_name(p_var, "LEOGEO", 
                                                                                             statistic) + " for the grid" #statistics_references_long
                 
                 # metadata
                 leogeo_calculated_statistics[leogeo_index][i].units = "1"#"degree"#meta[leogeo_meta_index]["units"]
-                print("LEOGEO STAT: ", meta[leogeo_meta_index])
+                #print("LEOGEO STAT: ", meta[leogeo_meta_index])
                 leogeo_calculated_statistics[leogeo_index][i].valid_range = meta[leogeo_meta_index]["valid_range"]
                 if not("Pixels" in statistic) or not("TotalPixels" in statistic):
                     leogeo_calculated_statistics[leogeo_index][i].scale_factor = round(meta[leogeo_meta_index]["scale_factor"], 3)
@@ -519,6 +548,7 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
         j += 1
         leogeo_meta_index += 1
     
+    
     """
     # put in gridded statistics
     # avgtau,stdtau,grdlat,grdlon,mintau,maxtau,count,sumtau = gridding.grid(limit,float(gsize),indata_stat,inlat_stat,inlon_stat)
@@ -560,8 +590,17 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
             print(sensors.get(p_vars))
     """
 
+    # print modis mean again
+    #print(values)
+    #print(values[0])
+    #print(values[0].long_name)
+    print("CHECK 1")
     #close file
-    ds.close()
+    #ds.close()
+    #grid_close(ds)
+    print("CHECK 2")
+    
+    return ds
     # output = 1 netcdf with six variables (one for each sensor) 
     # merge = run two loops (lat lon) (xdim, ydim from grid) 
     # merge aod equal to average of six sensors making sure no nan

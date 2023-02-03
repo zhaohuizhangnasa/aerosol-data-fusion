@@ -105,9 +105,11 @@ def get_sensor(s_name):
 # statistic can be Mean, STD, TotalPixels
 # data = array of satellite data [[sat1 data], [sat2 data], etc]
 # order is always mean, std, count
-def calculate_statistic(statistic, data, data2 = None, data3 = None):
+def calculate_statistic(statistic, data, data2 = None, data3 = None, scale_factor = None):
     if statistic == "Mean":
-        data = np.nan_to_num(np.array(data))
+        print("ORIGINAL DATA2:", np.array(data).flatten().max())
+        data = np.array(data)
+        #data = np.nan_to_num(data) #2/1/23
         
         #print("data dimensions")
         #print(len(data))
@@ -118,11 +120,35 @@ def calculate_statistic(statistic, data, data2 = None, data3 = None):
         #denominator = np.sum(np.array(data3), axis=0 )
         #denominator[denominator == 0] = None
         #avgtau = numerator / denominator
-        data[data<=-9999]=np.nan
+        #data[data<=-9999]=np.nan #2/1/23
+        #data = np.where(data<=-9999, np.nan, data) #2/1/23
+        #data = [[[_el if _el == -9999 else np.nan for _el in lat] for lat in sensor] for sensor in data] #2/1/23
+        data = np.array(data)
+        num_sensors = len(data)
+        lat_width = len(data[0])
+        lon_width = len(data[0][0])
+        data = data.flatten()
+        print(data)
+        print("BEFORE RESHAPE:" , data.max())
+        data[data<=-9999.] = np.nan
+        data = data.reshape(num_sensors, lat_width, lon_width)
+        
+        print("BEFORE MEAN:", np.nanmin(data.flatten()))
+        print("BEFORE MEAN:", np.nanmax(data.flatten()))
         avgtau = np.nanmean(np.array(data), axis=0 ) # [ [avgtau for modis a], [avgtau .. ]  ]
-    
+        print("AFTER MEAN: ", np.nanmin(avgtau.flatten()))
+        print("AFTER MEAN:", np.nanmax(avgtau.flatten()))
+        #print(avgtau.flatten())
+        avgtau = np.nan_to_num(avgtau, nan=-9999)
+        #print(avgtau.flatten())
+        #print("ORIGINAL DATA2:", data)
         
         #avgtau = np.nanmean(np.array(data), axis=0 )
+        avgtau = avgtau/scale_factor
+        
+        avgtau[avgtau > 5001] = -9999
+        avgtau[avgtau < -101] = -9999
+    
         return avgtau
     
     # https://stats.stackexchange.com/questions/55999/is-it-possible-to-find-the-combined-standard-deviation
@@ -131,7 +157,7 @@ def calculate_statistic(statistic, data, data2 = None, data3 = None):
         count = np.array(data3)
         variances = np.array(data2)**2
         
-        y_bar = calculate_statistic("Mean", mean, None, count)
+        y_bar = calculate_statistic("Mean", mean, None, count, scale_factor)
         total_count = np.sum(count, axis=0 )
         
         numerator_sum = (count - 1) * variances + count * (mean - y_bar)**2
