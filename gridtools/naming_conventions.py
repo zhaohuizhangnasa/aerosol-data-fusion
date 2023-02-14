@@ -133,11 +133,11 @@ def calculate_statistic(statistic, data, data2 = None, data3 = None, scale_facto
         data[data<=-9999.] = np.nan
         data = data.reshape(num_sensors, lat_width, lon_width)
         
-        print("BEFORE MEAN:", np.nanmin(data.flatten()))
-        print("BEFORE MEAN:", np.nanmax(data.flatten()))
+        #print("BEFORE MEAN:", np.nanmin(data.flatten()))
+        #print("BEFORE MEAN:", np.nanmax(data.flatten()))
         avgtau = np.nanmean(np.array(data), axis=0 ) # [ [avgtau for modis a], [avgtau .. ]  ]
-        print("AFTER MEAN: ", np.nanmin(avgtau.flatten()))
-        print("AFTER MEAN:", np.nanmax(avgtau.flatten()))
+        #print("AFTER MEAN: ", np.nanmin(avgtau.flatten()))
+        #print("AFTER MEAN:", np.nanmax(avgtau.flatten()))
         #print(avgtau.flatten())
         avgtau = np.nan_to_num(avgtau, nan=-9999)
         #print(avgtau.flatten())
@@ -148,6 +148,8 @@ def calculate_statistic(statistic, data, data2 = None, data3 = None, scale_facto
         
         avgtau[avgtau > 5001] = -9999
         avgtau[avgtau < -101] = -9999
+        
+        print("AVGTAU LEOGEO TYPE: ", avgtau.dtype)
     
         return avgtau
     

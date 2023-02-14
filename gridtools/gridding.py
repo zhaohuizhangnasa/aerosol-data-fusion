@@ -64,21 +64,20 @@ def grid(limit,gsize,indata,inlat,inlon): #valid_range
             i=int(round((inlon[ii]-minlon)/dx))
             j=int(round((inlat[ii]-minlat)/dy))
             
-            # do not take nan values into account
-            # nans should not be counted
-            if indata[ii] > 5000:
-                #print("loc", ii)
-                #print("loc: ", i, " loc: ", j)
-                #print(indata[ii])
-                pass
-            sumtau[i,j]=sumtau[i,j]+indata[ii]
-            sqrtau[i,j]=sqrtau[i,j]+(indata[ii])**2
-            count[i,j]=count[i,j]+1
-            
-            if indata[ii] < mintau[i,j]:
-                mintau[i,j]=indata[ii]
-            if indata[ii] > maxtau[i,j]:
-                maxtau[i,j]=indata[ii]
+            # 0 check
+            # disregard if 0
+            if indata[ii] != 0:
+                
+                # do not take nan values into account
+                # nans should not be counted
+                sumtau[i,j]=sumtau[i,j]+indata[ii]
+                sqrtau[i,j]=sqrtau[i,j]+(indata[ii])**2
+                count[i,j]=count[i,j]+1
+                
+                if indata[ii] < mintau[i,j]:
+                    mintau[i,j]=indata[ii]
+                if indata[ii] > maxtau[i,j]:
+                    maxtau[i,j]=indata[ii]
                 
             #print("updated: ", sumtau[i,j], mintau[i,j], maxtau[i,j])
     for i in range(xdim):
@@ -88,10 +87,7 @@ def grid(limit,gsize,indata,inlat,inlon): #valid_range
             
             if count[i,j] > 0:
                 avgtau[i,j]=sumtau[i,j]/count[i,j]
-                if avgtau[i,j] > 5000:
-                    #pass
-                    print("loc: ", i, " loc: ", j)
-                    print("SUM: ", sumtau[i,j], " COUNT:", count[i,j], "AVG:", avgtau[i,j])
+                
                 para1=(1/count[i,j])*(sqrtau[i,j])+(count[i,j])*avgtau[i,j]-2*(avgtau[i,j])*(sumtau[i,j])
                 if para1 > 0:
                     stdtau[i,j]=np.sqrt(para1)

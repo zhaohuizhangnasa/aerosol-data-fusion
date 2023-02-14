@@ -307,14 +307,18 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
                     values[index].units = "1" #meta[j]["units"]
                     values[index].valid_range = meta[j]["valid_range"]
                     values[index].long_name = naming_conventions.nc_long_name(p_vars, s_name, aod_stat, aod_long) + " for the grid" #meta[j]["long_name"]
-                    values[index].scale_factor = round(meta[j]["scale_factor"], 3)
-                    values[index].add_offset = meta[j]["add_offset"]
+                    #values[index].scale_factor = round(meta[j]["scale_factor"], 3)
+                    #values[index].add_offset = meta[j]["add_offset"]
                     values[index].Parameter_Type = meta[j]["Parameter_Type"]
                     
                     # check if pixels to add add_offset or scale_factor or not
                     if not(aod_stat in "Pixels") or not("Pixels" in aod_stat):
                         values[index].scale_factor = round(meta[j]["scale_factor"], 3)
                         values[index].add_offset = meta[j]["add_offset"]
+                        values[index].valid_range = meta[j]["valid_range"]
+                    else:
+                        # valid range for Pixel must be from 0
+                        values[index].valid_range = [0, 100]
 
                     
                     # instantiate the dictionary for statistics
@@ -382,12 +386,14 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
                     rotated[rotated > meta[j]["valid_range"][1]+1] = -800#meta[j]["_FillValue"]
                     rotated[rotated < meta[j]["valid_range"][0]-1] = -800 #meta[j]["_FillValue"]
                     
-                    final_input = np.flipud(rotated).astype(np.short)
+                    final_input = np.flipud(rotated)#.astype(np.short)
+                    final_input = final_input #/meta[j]["scale_factor"]
                     print(final_input)
                     #curr_sensor_value = values[index]
                     #values[index][0, :, :] = values[index][0, :, :].astype(np.short)
                     values[index][0, :, :] = final_input 
-                    values[index][0, :, :] = values[index][0, :, :].astype(np.short)
+                    values[index][0, :, :] = values[index][0, :, :].astype("f4")
+                    #values[index][0, :, :] = (values[index][0, :, :]*meta[j]["scale_factor"]).astype(np.short)
 
                     # AOD print
                     print("AFTER ASSIGNMENT: ",final_input)
@@ -499,10 +505,13 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
                 # metadata
                 leogeo_calculated_statistics[leogeo_index][i].units = "1"#"degree"#meta[leogeo_meta_index]["units"]
                 #print("LEOGEO STAT: ", meta[leogeo_meta_index])
-                leogeo_calculated_statistics[leogeo_index][i].valid_range = meta[leogeo_meta_index]["valid_range"]
                 if not("Pixels" in statistic) or not("TotalPixels" in statistic):
                     leogeo_calculated_statistics[leogeo_index][i].scale_factor = round(meta[leogeo_meta_index]["scale_factor"], 3)
                     leogeo_calculated_statistics[leogeo_index][i].add_offset = meta[leogeo_meta_index]["add_offset"]
+                    leogeo_calculated_statistics[leogeo_index][i].valid_range = meta[leogeo_meta_index]["valid_range"]
+                else:
+                    #Total pixels does nott have scale_factor, add_offset
+                    leogeo_calculated_statistics[leogeo_index][i].valid_range = [0, 100]
                 i+=1
             
                 
@@ -516,6 +525,8 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
             sensor_idx_variable[leogeo_index].long_name = naming_conventions.nc_long_name(p_var, "LEOGEO",
                                                                             "SensorWeighting", meta[j]["long_name"]) + " for the grid"
             sensor_idx_variable[leogeo_index].units = "1"
+            #sensor_idx_variable[leogeo_index].valid_range = [0,1]
+            #sensor_idx_variable[leogeo_index].scale_factor = float(1/6)
             number_of_sensors = []
             
             i = 0
@@ -554,6 +565,8 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
             number_of_sensors_variable[leogeo_index].long_name = naming_conventions.nc_long_name(p_var, "LEOGEO",
                                                                               "NumberOfSensors", meta[j]["long_name"])  + " for the grid"
             number_of_sensors_variable[leogeo_index].units = "1"
+            #number_of_sensors_variable[leogeo_index].scale_factor = float(1/6)
+            
             leogeo_index+=1    
         j += 1
         leogeo_meta_index += 1
