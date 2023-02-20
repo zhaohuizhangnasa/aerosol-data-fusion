@@ -32,7 +32,8 @@ def get_SZA(lat, lon, time_start, time_diff):
     time_obj = pd.to_datetime(time_start) + pd.to_timedelta(time_diff, unit="minute")
     time_obj = time_obj.replace(tzinfo=datetime.timezone.utc)
     
-    return get_altitude(lat, lon, time_obj.to_pydatetime())
+    #return get_altitude(lat, lon, time_obj.to_pydatetime())
+    return (90-get_altitude(lat, lon, time_obj.to_pydatetime()))
 
 def get_SZA_array_pysolar(limit, gsize, time_start, time_diff):
     # limit = [min lat, max lat, min lon, max lon]

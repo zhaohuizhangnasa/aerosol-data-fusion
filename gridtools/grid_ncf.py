@@ -221,10 +221,10 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
     solar_zenith_variable.add_offset = float(0)
     #netCDF4.nc_put_att(ds, solar_zenith_variable, 'add_offset', 'f4', 1, 0)
     
-    #solar_zenith_variable[0, :, :] = solar_zenith.get_SZA_parallelized(limit, gsize, time_start, time_diff)
+    solar_zenith_variable[0, :, :] = solar_zenith.get_SZA_parallelized(limit, gsize, time_start, time_diff)
     #copy solar_zenith
     
-    
+    """
     path = "/mnt/c/Users/bobgr/Desktop/Spring 2022 NASA/Gridtools Package (Code, README, inputs, outputs, examples, verification)/"
     fn = path + "SampleOutputs 0000-0059 01-01-2020/XAERDT_L3_MEASURES_QD_HH.20200101.0000.V0.20221208v3.nc"
     src = netCDF4.Dataset(fn)
@@ -233,7 +233,7 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
             print("metadata: ", src[name].__dict__)
     solar_zenith_variable[0, :, :] = src["Solar_Zenith_Angle"][:]
     src.close()
-    
+    """
     
     print("solar zenith done")
     
@@ -499,9 +499,13 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
                 leogeo_calculated_statistics[leogeo_index][i][0, :, :] = stat_values
                 #print("MAX STAT VALUE for ", statistic, ":", stat_values.max())
                 leogeo_long = meta[leogeo_meta_index]["long_name"]
-                leogeo_calculated_statistics[leogeo_index][i].long_name = naming_conventions.nc_long_name(p_var, "LEOGEO", 
-                                                                                            statistic) + " for the grid" #statistics_references_long
                 
+                if (("Filtered" in name) or ("filtered" in name)) and (statistic == "Mean"):
+                    leogeo_calculated_statistics[leogeo_index][i].long_name = naming_conventions.nc_long_name(p_var, "LEOGEO", 
+                                                                                          statistic) + " for the grid. " + "It is average of individual sensor gridded AODs (i.e. AOD_FilteredQA_550_*_*_Mean)" #statistics_references_long
+                else:
+                    leogeo_calculated_statistics[leogeo_index][i].long_name = naming_conventions.nc_long_name(p_var, "LEOGEO", 
+                                                                                          statistic) + " for the grid"
                 # metadata
                 leogeo_calculated_statistics[leogeo_index][i].units = "1"#"degree"#meta[leogeo_meta_index]["units"]
                 #print("LEOGEO STAT: ", meta[leogeo_meta_index])
