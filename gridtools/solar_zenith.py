@@ -177,7 +177,7 @@ def date_to_num(datetime_obj):
     return D, time
 
 # calculates solar zenith for singular point
-def get_SZA(lat, lon, time_start, time_diff=30):
+def get_SZA_new(lat, lon, time_start, time_diff=30):
     datetime_obj = pd.to_datetime(time_start)
     datetime_obj = datetime_obj.replace(tzinfo=datetime.timezone.utc)
     
@@ -191,7 +191,7 @@ def get_SZA(lat, lon, time_start, time_diff=30):
     return math.degrees(theta_rad)
 
 # uses pysolar library
-def get_SZA_old(lat, lon, time_start, time_diff):
+def get_SZA(lat, lon, time_start, time_diff):
     time_obj = pd.to_datetime(time_start) + pd.to_timedelta(time_diff, unit="minute")
     time_obj = time_obj.replace(tzinfo=datetime.timezone.utc)
     

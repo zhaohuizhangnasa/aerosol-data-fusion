@@ -28,6 +28,7 @@ def filter_data_nc(GeoID,PhyID,geo_list,phy_list, phy_nc = None):
     lon = []
     phy_vars = []
     metadata = []
+    
 
     for p in range(len(phy_list)):
         lat1 = geo['data'][0][:,:]

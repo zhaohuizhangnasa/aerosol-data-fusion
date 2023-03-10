@@ -105,40 +105,23 @@ def get_sensor(s_name):
 # statistic can be Mean, STD, TotalPixels
 # data = array of satellite data [[sat1 data], [sat2 data], etc]
 # order is always mean, std, count
-def calculate_statistic(statistic, data, data2 = None, data3 = None, scale_factor = None):
+def calculate_statistic(statistic, data, data2 = None, data3 = None, scale_factor = 1):
     if statistic == "Mean":
-        print("ORIGINAL DATA2:", np.array(data).flatten().max())
-        data = np.array(data)
-        #data = np.nan_to_num(data) #2/1/23
-        
-        #print("data dimensions")
-        #print(len(data))
-        #print(len(data[0]))
-        #count = np.array(data3)
-        
-        #numerator = np.sum(np.array(data) , axis=0) #* count, axis=0)
-        #denominator = np.sum(np.array(data3), axis=0 )
-        #denominator[denominator == 0] = None
-        #avgtau = numerator / denominator
-        #data[data<=-9999]=np.nan #2/1/23
-        #data = np.where(data<=-9999, np.nan, data) #2/1/23
-        #data = [[[_el if _el == -9999 else np.nan for _el in lat] for lat in sensor] for sensor in data] #2/1/23
+        """
         data = np.array(data)
         num_sensors = len(data)
         lat_width = len(data[0])
         lon_width = len(data[0][0])
         data = data.flatten()
-        print(data)
-        print("BEFORE RESHAPE:" , data.max())
+        
         data[data<=-9999.] = np.nan
         data = data.reshape(num_sensors, lat_width, lon_width)
+        """
         
-        #print("BEFORE MEAN:", np.nanmin(data.flatten()))
-        #print("BEFORE MEAN:", np.nanmax(data.flatten()))
-        avgtau = np.nanmean(np.array(data), axis=0 ) # [ [avgtau for modis a], [avgtau .. ]  ]
-        #print("AFTER MEAN: ", np.nanmin(avgtau.flatten()))
-        #print("AFTER MEAN:", np.nanmax(avgtau.flatten()))
-        #print(avgtau.flatten())
+        data = np.array(data)
+        data[data<=-9999.] = np.nan
+        
+        avgtau = np.nanmean(data, axis=0 ) # [ [avgtau for modis a], [avgtau .. ]  ]
         avgtau = np.nan_to_num(avgtau, nan=-9999)
         #print(avgtau.flatten())
         #print("ORIGINAL DATA2:", data)
@@ -155,6 +138,7 @@ def calculate_statistic(statistic, data, data2 = None, data3 = None, scale_facto
     
     # https://stats.stackexchange.com/questions/55999/is-it-possible-to-find-the-combined-standard-deviation
     if statistic == "STD":
+        
         mean = np.array(data)
         count = np.array(data3)
         variances = np.array(data2)**2
@@ -169,6 +153,14 @@ def calculate_statistic(statistic, data, data2 = None, data3 = None, scale_facto
         denominator[denominator == 0] = None
         
         return np.sqrt(numerator / denominator)
+        """
+        data = np.array(data)
+        data[data<=-9999.] = np.nan
+        
+        stdtau = np.nanstd(data, axis = 0)
+        
+        return stdtau
+        """
     
     if statistic == "TotalPixels":
         count = np.sum(np.array(data3), axis=0 )
@@ -179,15 +171,22 @@ def calculate_statistic(statistic, data, data2 = None, data3 = None, scale_facto
 
 if __name__ == '__main__':
     #testing
-    data = [[[3, 2], [0, 0]], [[1, 4], [1, -5]], [[1, 0], [0, 0]]]
+    data = [[[3., 2], 
+             [0, -10000000]], 
+            [[1, 4], 
+             [1, 1]]]
     data2 = [[[10, 10], [10, 10]], [[0, 10], [10, 10]], [[10, 10], [10, 10]]]
     data3 = [[[3, 2], [0, 0]], [[1, 4], [1, -5]], [[1, 0], [0, 0]]]
     
-    print(nc_long_name("Optical_Depth_Land_And_Ocean", "LEOGEO", "TotalPixels"))
+    #print(nc_long_name("Optical_Depth_Land_And_Ocean", "LEOGEO", "TotalPixels"))
     #data = np.array([[[0,1],[2,3]], [[1,2], [3, 4]]])
     #print(np.nanmean(np.array(data), axis=0 ))
     
-    path = "/mnt/c/Users/bobgr/Desktop/NASA Spring 2023/Gridtools Package (Code, README, inputs, outputs, examples, verification)/SampleOutputs 0000-0059 01-01-2020/"
-    filename = "XAERDT_L3_MEASURES_QD_HH.20200101.0000.V0.20230130.nc"
-    L2FID = netCDF4.Dataset(path+filename,'r',format='NETCDF4')
-    L2FID.close()
+    #path = "/mnt/c/Users/bobgr/Desktop/NASA Spring 2023/Gridtools Package (Code, README, inputs, outputs, examples, verification)/SampleOutputs 0000-0059 01-01-2020/"
+    #filename = "XAERDT_L3_MEASURES_QD_HH.20200101.0000.V0.20230130.nc"
+    #L2FID = netCDF4.Dataset(path+filename,'r',format='NETCDF4')
+    #L2FID.close()
+    
+    print(data)
+    print("MEAN:", calculate_statistic("Mean", data))
+    print("STD:", calculate_statistic("STD", data))

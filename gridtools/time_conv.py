@@ -32,7 +32,7 @@ def filename_time(filename):
     return date
 
 # given list of files, we need to sort them based upon their dates
-# input 1d array
+# input 1d array [[], [], []]
 # output 2d array where each element represents the list of dates that fall with the inteveral
 
 # start represents the start time (datetime object)

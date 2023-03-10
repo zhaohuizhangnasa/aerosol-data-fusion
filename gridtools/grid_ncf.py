@@ -34,8 +34,22 @@ import naming_conventions
 import solar_zenith
 import datetime
 
-def grid_close(ds):
-    ds.close()
+# full satellite list 
+# used to check if any satellites are missing
+full_satellite_list = ['AERDT_L2_ABI_G16', 'AERDT_L2_ABI_G17', 'AERDT_L2_AHI_H08', 'AERDT_L2_VIIRS_SNPP', 'MOD04_L2', 'MYD04_L2']
+
+# takes in dictionary 
+# keys are satellite names, values = array of filepaths
+# returns 1D array of satellite file inputs
+def sat_list_name_concat(file_list):
+    file_inputs = []
+    
+    for key in file_list:
+        for f in file_list[key]:
+            file_inputs.append(f[(f.rfind("/") + 1):])
+    
+    return file_inputs
+
 
 # filename - 'gridNet.nc' (this is what it saves to)
 # sat_files - list of satellite files to pull data from
@@ -96,24 +110,9 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
     ds.ProductionDateTime = production_yyyymmdd +":"+ production_hhmmss
     
     ds.IdentifierProductDOIAuthority  = "https://dx.doi.org/"
-    """
-    ds.VersionID = None
-    ds.GranuleID = None
-    ds.Format = "netCDF4"
-    ds.RangeBeginningDate = None
-    ds.RangeBeginningTime  = None
-    ds.RangeEndingDate = None
-    ds.RangeEndingTime = None
-    ds.IdentifierProductDOIAuthority = "https://dx.doi.org/ - product DOI authority "
-    ds.IdentifierProductDOI = None
-    ds.ProductionDateTime = None
-    ds.ProcessingLevel = "Level 3"
-    ds.Conventions = None
-    ds.NorthernmostLatitude = limit[1]
-    ds.SouthernmostLatitude = limit[0]
-    ds.WesternmostLongitude = limit[2]
-    ds.WesternmostLongitude = limit[3]
-    """
+    
+    #list of all files used in creation of this output
+    ds.SatelliteInputFiles = sat_list_name_concat(filelist)
     
     # Create time, lat, lon, sensor dimensions
     timed = ds.createDimension('time', None)
@@ -221,19 +220,19 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
     solar_zenith_variable.add_offset = float(0)
     #netCDF4.nc_put_att(ds, solar_zenith_variable, 'add_offset', 'f4', 1, 0)
     
-    solar_zenith_variable[0, :, :] = solar_zenith.get_SZA_parallelized(limit, gsize, time_start, time_diff)
+    # solar_zenith_variable[0, :, :] = solar_zenith.get_SZA_parallelized(limit, gsize, time_start, time_diff)
     #copy solar_zenith
     
-    """
-    path = "/mnt/c/Users/bobgr/Desktop/Spring 2022 NASA/Gridtools Package (Code, README, inputs, outputs, examples, verification)/"
-    fn = path + "SampleOutputs 0000-0059 01-01-2020/XAERDT_L3_MEASURES_QD_HH.20200101.0000.V0.20221208v3.nc"
+    
+    path = "/mnt/c/Users/bobgr/Desktop/NASA Spring 2023/Gridtools Package (Code, README, inputs, outputs, examples, verification)/"
+    fn = path + "SampleOutputs 0000-0059 01-01-2020/XAERDT_L3_MEASURES_QD_HH.20200101.0000.V0.20230307.nc"
     src = netCDF4.Dataset(fn)
     for name, variable in src.variables.items():
         if name == "Solar_Zenith_Angle":
             print("metadata: ", src[name].__dict__)
     solar_zenith_variable[0, :, :] = src["Solar_Zenith_Angle"][:]
     src.close()
-    """
+    
     
     print("solar zenith done")
     
@@ -245,6 +244,28 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
     #sensor_idx_stats = {"NumberOfSensors":[], "SensorWeighting":[]}
     #sensor_idx = {} #key = sensor name, value = sensoridx
     sensor_idx_arr = {} #key = geophys value, value = sensor_idx
+    
+    # instantiate the satellites that are not present
+    # no inputs for these satellites, blank data for their netCDF4 output variables
+    
+    not_present_satellites = [s for s in full_satellite_list if s not in list(filelist.keys())]
+    
+    for s_name in not_present_satellites: 
+        for j, p_vars in enumerate(phy_list):
+            if not("Sensor_Zenith" in p_vars or "Scattering_Angle" in p_vars):
+                aod_statistics = ["Mean", "STD", "Pixels"]
+                
+                for aod_stat in aod_statistics:
+                    name = naming_conventions.nc_var_name(p_vars, s_name, aod_stat) #str(s_name+"_"+p_vars)
+                    ds.createVariable(name, np.short, ('time', 'lat', 'lon', ))
+                    # empty variable
+                    # no metadata, no fill value, no long_name, etc
+                    
+            else: #phy_var is NOT aod
+                name = naming_conventions.nc_var_name(p_vars, s_name) #str(s_name+"_"+p_vars)
+                values.append(ds.createVariable(name, np.short, ('time', 'lat', 'lon', )))
+    # end instantiation of empty variables
+    
     
     #run through and assign gridded data to sensor variable
     # filenames are in the form:
@@ -284,6 +305,7 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
                 inlon_temp[count] = ma.concatenate([inlon_temp[count], lon[count]])
         # end sensor concatenations
         # indata = [[geovar data 1], [geovar data 2], ... , [geovar data n]]
+        
         
         # grid parameters
         # individual sensor statistics
