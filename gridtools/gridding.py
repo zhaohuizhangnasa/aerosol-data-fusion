@@ -64,16 +64,19 @@ def grid(limit,gsize,indata,inlat,inlon): #valid_range
                 # pixel coordinates for bounds
                 i=int(round((inlon[ii]-minlon)/dx))
                 j=int(round((inlat[ii]-minlat)/dy))
-                
-                # do not take nan values into account
-                # nans should not be counted
-                sumtau[i,j]=sumtau[i,j]+indata[ii]
-                sqrtau[i,j]=sqrtau[i,j]+(indata[ii])**2
-                count[i,j]+=1
-                if indata[ii] < mintau[i,j]:
-                    mintau[i,j]=indata[ii]
-                if indata[ii] > maxtau[i,j]:
-                    maxtau[i,j]=indata[ii]
+
+                # 0 check
+                # disregard if 0
+                if indata[ii] != 0:
+                    # do not take nan values into account
+                    # nans should not be counted
+                    sumtau[i,j]=sumtau[i,j]+indata[ii]
+                    sqrtau[i,j]=sqrtau[i,j]+(indata[ii])**2
+                    count[i,j]+=1
+                    if indata[ii] < mintau[i,j]:
+                        mintau[i,j]=indata[ii]
+                    if indata[ii] > maxtau[i,j]:
+                        maxtau[i,j]=indata[ii]
                     
                 #print("updated: ", sumtau[i,j], mintau[i,j], maxtau[i,j])
 
@@ -171,11 +174,12 @@ def grid_gpu_1(gsize, ydim, indata_length,\
             
             # do not take nan values into account
             # nans should not be counted
-            cuda.atomic.add(sumtau, ij, indata[idx])
-            cuda.atomic.add(sqrtau, ij, indata[idx]**2)
-            cuda.atomic.add(count, ij, 1)
-            cuda.atomic.min(mintau, ij, indata[idx])
-            cuda.atomic.max(maxtau, ij, indata[idx])
+            if indata[idx] != 0:
+                cuda.atomic.add(sumtau, ij, indata[idx])
+                cuda.atomic.add(sqrtau, ij, indata[idx]**2)
+                cuda.atomic.add(count, ij, 1)
+                cuda.atomic.min(mintau, ij, indata[idx])
+                cuda.atomic.max(maxtau, ij, indata[idx])
 
 
 @cuda.jit
