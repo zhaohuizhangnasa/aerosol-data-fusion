@@ -4,7 +4,7 @@ import sat_data_input
 import filter_data
 import gridding
 import grid_ncf
-import fileparser
+import fileparser # comment for specific file functions
 import time_conv
 
 import os
@@ -350,6 +350,65 @@ def netCDF_yaml_config(file_name):
 
     end_timer = time.time()
     print("Full execution time: ", end_timer - start_timer)
+    
+# output - folder location
+def netCDF_yaml_config_time(file_name, time_start, time_end):
+
+    grid_settings, variables, file_io = fileparser.read_config(file_name)
+
+    start_timer = time.time()
+
+    geo_list = variables["geo_var"]
+    phy_list = variables["phy_var"]
+    phy_nc = variables["phy_var_nc"]
+    phy_hdf = variables["phy_var_hdf"]
+    limit = grid_settings["limit"]
+    
+    # list of file paths for specific files to read
+    if file_io["file_location_folder"] == "NA":
+        filelist = fileparser.read_file_sat_data(file_io["file_location_file"])
+    else:
+        filelist = fileparser.read_folder_sat_data(file_io["file_location_folder"])
+        
+    #static file for Land_Sea_Mask and Topographic_Altitude
+    static_file = file_io["static_file"]
+    print("static file:", static_file)
+
+    #time_start = grid_settings["time_start"]
+    #time_end = grid_settings["time_end"]
+    start = time_conv.to_datetime(time_start)
+    end = time_conv.to_datetime(time_end)
+
+    # [[filenames for a time interval] , [], []]
+    time_interval = grid_settings["time_interval"]
+    split_files = time_conv.split_filetimes(filelist, start, end, int(time_interval))
+    
+    # [{sensor: array of filenames}, {}, {}, {}, {}]
+    # code should record bugs - always six sensors available
+    # code should report that modis is not available
+    split_files = time_conv.split_filenames(split_files)
+
+    gsize = float(grid_settings["gridsize"])
+
+    curr = start
+    outputfolder = file_io["output_location"]
+    outputname = file_io["output_name"]
+    
+    count= 0
+    for f in split_files:
+        #name = outputfolder + outputname + str(curr).replace(":", "-")+".nc"
+        #XAERDT_L3_MEASURES_QD_HH.YYYYMMDD.HHMM.V0.ProcessingDate.nc
+        time_string = str(curr).replace(":", "").replace("-", "").replace(" ", "")
+        time_string = time_string[:8] + '.' + time_string[8:-2]
+        processing_date = time_conv.sys_time()
+        name = outputfolder + "XAERDT_L3_MEASURES_QD_HH." + time_string+ ".V0." +processing_date+ ".nc"
+        
+        ds = grid_ncf.grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, f, name, curr, time_interval, phy_nc, phy_hdf, static_file)
+        ds.close()
+        curr = curr + datetime.timedelta(minutes = int(time_interval))
+
+    end_timer = time.time()
+    print("Full execution time: ", end_timer - start_timer)
 
     
 
@@ -386,6 +445,7 @@ def control():
     cmd_group.add_argument("-sss", "--sensor_statistics_split", action="store_true", help="Reads sensors and reports statistics and gridded data based on satellite categorization.")
     cmd_group.add_argument("-ssi", "--sensor_statistics_split_id", action="store_true", help="Reads sensors and reports statistics and gridded data based on satellite categorization.")
     cmd_group.add_argument("-cfg", "--config", action="store_true", help="Grids according to yaml config file")
+    cmd_group.add_argument("-cfgtime", "--configtime", action="store_true", help="Grids according to yaml config file")
 
 
     # verbose, quiet
@@ -453,6 +513,12 @@ def control():
         # "C:\Users\bobgr\Desktop\Spring 2022 NASA\Gridtools Package (Code, README, inputs, outputs, examples, verification)\gridtools\config.yml"
         # "C:/Users/bobgr/Desktop/Spring 2022 NASA/Gridtools Package (Code, README, inputs, outputs, examples, verification)/gridtools/config.yml"
         netCDF_yaml_config(str(args.filename))
+    elif args.configtime:
+        # yaml config 
+        # python gtools.py -cfg -fn "C:\Users\swzhao\Desktop\repos\gridtools\config.yml"
+        # "C:\Users\bobgr\Desktop\Spring 2022 NASA\Gridtools Package (Code, README, inputs, outputs, examples, verification)\gridtools\config.yml"
+        # "C:/Users/bobgr/Desktop/Spring 2022 NASA/Gridtools Package (Code, README, inputs, outputs, examples, verification)/gridtools/config.yml"
+        netCDF_yaml_config_time(str(args.filename), str(args.time_start), str(args.time_end))
     else:
         print("No command given")
         
