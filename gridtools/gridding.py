@@ -48,7 +48,7 @@ def grid(limit,gsize,indata,inlat,inlon): #valid_range
     sumtau=np.zeros((xdim,ydim)) # init 2d array map with zeros
     sqrtau=np.zeros((xdim,ydim))
     count=np.zeros((xdim,ydim))
-    mintau=np.full([xdim,ydim],10.0) # init 2d array map with defaults
+    mintau=np.full([xdim,ydim],5000.0) # init 2d array map with defaults
     maxtau=np.full([xdim,ydim],-100.0) # fill value, do not change min max
     avgtau=np.full([xdim,ydim],-9999.0) # write nans as fill values rather than nans
     stdtau=np.full([xdim,ydim],-9999.0)
