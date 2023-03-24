@@ -91,7 +91,7 @@ def grid(limit,gsize,indata,inlat,inlon): #valid_range
                         stdtau[i,j]=np.sqrt(para1)
                         
         # change none to fill values
-        mintau[mintau==10]=None
+        mintau[mintau==5000]=None
         maxtau[maxtau==-1]=None
         avgtau[avgtau==-1]=None
 
@@ -139,7 +139,7 @@ def grid(limit,gsize,indata,inlat,inlon): #valid_range
     count = d_count.copy_to_host().reshape([xdim,ydim])
     sumtau = d_sumtau.copy_to_host().reshape([xdim,ydim])
 
-    mintau[mintau==10]=None
+    mintau[mintau==5000]=None
     maxtau[maxtau==-1]=None
     avgtau[avgtau==-1]=None
 
