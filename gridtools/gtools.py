@@ -1,3 +1,15 @@
+__author__ = "Sally Zhao"
+__copyright__ = "Copyright 2023, Pyroscope"
+__credits__ = ["Neil Gutkin", "Jennifer Wei", "Pawan Gupta", "Robert Levy", "Xiaohua Pan", "Zhaohui Zhang"]
+__version__ = "1.0.0"
+__maintainer__ = "Sally Zhao"
+__email__ = "zhaosally0@gmail.com"
+__status__ = "Production"
+# Gtools
+#
+# the control for the file. It parses command line arguments and calls to grid_ncf
+#
+
 #import other module files
 from concurrent.futures import process
 import sat_data_input
@@ -12,7 +24,7 @@ import argparse
 import numpy as np
 import datetime
 import time
-
+"""
 # python3 gtools.py -r -fn "C:/Users/swzhao/Desktop/Old Code and Satellite Inputs/Satellite Sensor Data/AERDT_L2_VIIRS_SNPP.A2021008.2018.001.2021009072852.nc" -gl "latitude longitude" -gp "Optical_Depth_Land_And_Ocean"
 def read(filename, geo_list, phy_list, verbose = False):
 
@@ -96,18 +108,19 @@ def grid(filename, geo_list, phy_list, verbose = False):
         print(avgtau)
 
     return avgtau,stdtau,grdlat,grdlon,mintau,maxtau,count,sumtau
-
+"""
+"""
 def netCDF_single(filename, geo_list, phy_list, output):
     geo_list = geo_list.split(" ")
     print(geo_list)
     phy_list = phy_list.split(" ")
     print(phy_list)
 
-    L2FID,GeoID,PhyID = sat_data_input.open_file(filename)
+    #L2FID,GeoID,PhyID = sat_data_input.open_file(filename)
 
-    lat,lon,phy_vars, metadata = filter_data.filter_data(GeoID, PhyID, geo_list, phy_list, phy_nc=phy_list, phy_hdf=phy_list)
+    #,lon,phy_vars, metadata = filter_data.filter_data(GeoID, PhyID, geo_list, phy_list, phy_nc=phy_list, phy_hdf=phy_list)
 
-    L2FID.close()
+    #L2FID.close()
 
     #grid parameters
     limit = [min(lat[0]), max(lat[0]), min(lon[0]),  max(lon[0])]
@@ -119,7 +132,7 @@ def netCDF_single(filename, geo_list, phy_list, output):
     print("Results at: " + output)
 
     grid_ncf.gridNC_single(limit, gsize, indata, inlat, inlon, output)
-
+"""
 #gridNC_time(limit, gsize, indata, inlat, inlon, 1, phy_list, geo_list, sat_files[:10], fpath + "viirs_time_compv1.nc")
 def netCDF_multi(filelist, geo_list, phy_list, output):
     geo_list = geo_list.split(" ")
@@ -145,7 +158,7 @@ def netCDF_multi(filelist, geo_list, phy_list, output):
 
     print("Results at: " + output)
 
-    grid_ncf.gridNC_time(limit, gsize, indata, inlat, inlon, 1, phy_list, geo_list, filelist, output)
+    #grid_ncf.gridNC_time(limit, gsize, indata, inlat, inlon, 1, phy_list, geo_list, filelist, output)
     
     #grid_ncf.gridNC_time(limit, gsize, indata, inlat, inlon, output)
 
@@ -173,7 +186,7 @@ def netCDF_multi_time(filelist, gsize, geo_list, phy_list, output, time_interval
     inlat=lat
     inlon = lon
 
-    grid_ncf.grid_nc_mult_files_time(limit, gsize, indata, inlat, inlon, phy_list, geo_list, split_files, output)
+    #grid_ncf.grid_nc_mult_files_time(limit, gsize, indata, inlat, inlon, phy_list, geo_list, split_files, output)
 
     end_timer = time.time()
     print("Full execution time: ", end_timer - start_timer)
@@ -201,7 +214,7 @@ def netCDF_sensor_statistics(filelist, limit, gsize, geo_list, phy_list, outputf
         name = outputfolder + outputname + str(curr).replace(":", "-")+".nc"
 
         # grid files
-        grid_ncf.grid_nc_single_statistics(limit, gsize, geo_list, phy_list, f, name)
+        #grid_ncf.grid_nc_single_statistics(limit, gsize, geo_list, phy_list, f, name)
         curr = curr + datetime.timedelta(minutes = int(time_interval))
 
     end_timer = time.time()
@@ -237,7 +250,7 @@ def netCDF_sensor_statistics_split(filelist, limit, gsize, geo_list, phy_list, o
         name = outputfolder + outputname + str(curr).replace(":", "-")+".nc"
 
         # grid files
-        grid_ncf.grid_nc_statistics(limit, gsize, geo_list, phy_list, f, name)
+        #grid_ncf.grid_nc_statistics(limit, gsize, geo_list, phy_list, f, name)
         curr = curr + datetime.timedelta(minutes = int(time_interval))
 
     end_timer = time.time()
@@ -276,7 +289,7 @@ def netCDF_sensor_statistics_id(filelist, limit, gsize, geo_list, phy_list, outp
         
         # grid files
         #grid_nc_sensor_statistics_metadata
-        grid_ncf.grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, f, name, phy_nc=phy_list, phy_hdf=phy_list)
+        #grid_ncf.grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, f, name, phy_nc=phy_list, phy_hdf=phy_list)
         curr = curr + datetime.timedelta(minutes = int(time_interval))
 
     end_timer = time.time()
@@ -294,12 +307,17 @@ def netCDF_yaml_config(file_name):
     phy_nc = variables["phy_var_nc"]
     phy_hdf = variables["phy_var_hdf"]
     limit = grid_settings["limit"]
+    pixel_range = variables["pixel_range"]
     
     # list of file paths for specific files to read
-    if file_io["file_location_folder"] == "NA":
-        filelist = fileparser.read_file_sat_data(file_io["file_location_file"])
+    if file_io["file_directory_folder"] == "NA":
+        if file_io["file_location_folder"] == "NA":
+            filelist = fileparser.read_file_sat_data(file_io["file_location_file"])
+        else:
+            filelist = fileparser.read_folder_sat_data(file_io["file_location_folder"])
     else:
-        filelist = fileparser.read_folder_sat_data(file_io["file_location_folder"])
+        filelist = fileparser.read_directory_sat_data(file_io["file_directory_folder"])
+        
         
     #static file for Land_Sea_Mask and Topographic_Altitude
     static_file = file_io["static_file"]
@@ -344,7 +362,7 @@ def netCDF_yaml_config(file_name):
         # grid files
         #grid_nc_sensor_statistics_metadata
         
-        ds = grid_ncf.grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, f, name, curr, time_interval, phy_nc, phy_hdf, static_file)
+        ds = grid_ncf.grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, f, name, curr, time_interval, phy_nc, phy_hdf, static_file, pixel_range)
         ds.close()
         curr = curr + datetime.timedelta(minutes = int(time_interval))
 
@@ -363,13 +381,18 @@ def netCDF_yaml_config_time(file_name, time_start, time_end):
     phy_nc = variables["phy_var_nc"]
     phy_hdf = variables["phy_var_hdf"]
     limit = grid_settings["limit"]
+    pixel_range = variables["pixel_range"]
     
     # list of file paths for specific files to read
-    if file_io["file_location_folder"] == "NA":
-        filelist = fileparser.read_file_sat_data(file_io["file_location_file"])
+    if file_io["file_directory_folder"] == "NA":
+        if file_io["file_location_folder"] == "NA":
+            filelist = fileparser.read_file_sat_data(file_io["file_location_file"])
+        else:
+            filelist = fileparser.read_folder_sat_data(file_io["file_location_folder"])
     else:
-        filelist = fileparser.read_folder_sat_data(file_io["file_location_folder"])
+        filelist = fileparser.read_directory_sat_data(file_io["file_directory_folder"])
         
+    print("FILELIST: ", filelist)
     #static file for Land_Sea_Mask and Topographic_Altitude
     static_file = file_io["static_file"]
     print("static file:", static_file)
@@ -378,6 +401,7 @@ def netCDF_yaml_config_time(file_name, time_start, time_end):
     #time_end = grid_settings["time_end"]
     start = time_conv.to_datetime(time_start)
     end = time_conv.to_datetime(time_end)
+    
 
     # [[filenames for a time interval] , [], []]
     time_interval = grid_settings["time_interval"]
@@ -403,7 +427,7 @@ def netCDF_yaml_config_time(file_name, time_start, time_end):
         processing_date = time_conv.sys_time()
         name = outputfolder + "XAERDT_L3_MEASURES_QD_HH." + time_string+ ".V0." +processing_date+ ".nc"
         
-        ds = grid_ncf.grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, f, name, curr, time_interval, phy_nc, phy_hdf, static_file)
+        ds = grid_ncf.grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, f, name, curr, time_interval, phy_nc, phy_hdf, static_file, pixel_range)
         ds.close()
         curr = curr + datetime.timedelta(minutes = int(time_interval))
 
@@ -424,7 +448,7 @@ def execute_file(filename):
 
     split_files = time_conv.split_filetimes(filelist, start, end, int(time_interval))
 
-    grid_ncf.grid_nc_mult_files_time(limit, gsize, indata, inlat, inlon, phy_list, geo_list, split_files, output)
+    #grid_ncf.grid_nc_mult_files_time(limit, gsize, indata, inlat, inlon, phy_list, geo_list, split_files, output)
 
 
 
@@ -474,17 +498,21 @@ def control():
 
     # decides what function to run
     if args.read:
+        pass
         #python3 gtools.py -r -fn "/mnt/c/Users/bobgr/Desktop/Spring 2022 NASA/Gridtools Package (Code, README, inputs, outputs, examples, verification)/SampleInputs 0000-0059 01-01-2020/AERDT_L2_ABI_G16.A2020001.0000.001.2022003073056.nc" -gl "latitude longitude" -gp "Optical_Depth_Land_And_Ocean"
-        read(str(args.filename), str(args.geo_list),str(args.geo_phys), args.verbose)
+        #read(str(args.filename), str(args.geo_list),str(args.geo_phys), args.verbose)
     elif args.filter:
+        pass
         #python3 gtools.py -f -fn "/mnt/c/Users/bobgr/Desktop/Spring 2022 NASA/Gridtools Package (Code, README, inputs, outputs, examples, verification)/SampleInputs 0000-0059 01-01-2020/AERDT_L2_ABI_G16.A2020001.0000.001.2022003073056.nc" -gl "latitude longitude" -gp "Optical_Depth_Land_And_Ocean"
-        filter(str(args.filename), str(args.geo_list),str(args.geo_phys), args.verbose)
+        #filter(str(args.filename), str(args.geo_list),str(args.geo_phys), args.verbose)
     elif args.grid:
+        pass
         #python3 gtools.py -g -fn "/mnt/c/Users/bobgr/Desktop/Spring 2022 NASA/Gridtools Package (Code, README, inputs, outputs, examples, verification)/SampleInputs 0000-0059 01-01-2020/AERDT_L2_ABI_G16.A2020001.0000.001.2022003073056.nc" -gl "latitude longitude" -gp "Optical_Depth_Land_And_Ocean"
-        grid(str(args.filename), str(args.geo_list),str(args.geo_phys), args.verbose)
+        #grid(str(args.filename), str(args.geo_list),str(args.geo_phys), args.verbose)
     elif args.netCDF_single:
+        pass
         #python3 gtools.py -ns -fn "/mnt/c/Users/bobgr/Desktop/Spring 2022 NASA/Gridtools Package (Code, README, inputs, outputs, examples, verification)/SampleInputs 0000-0059 01-01-2020/AERDT_L2_ABI_G16.A2020001.0000.001.2022003073056.nc" -gl "latitude longitude" -gp "Optical_Depth_Land_And_Ocean" -o "/mnt/c/Users/bobgr/Desktop/Spring 2022 NASA/Gridtools Package (Code, README, inputs, outputs, examples, verification)/SampleOutputs 0000-0059 01-01-2020/single_ns_result.nc"
-        netCDF_single(str(args.filename), str(args.geo_list),str(args.geo_phys), args.output)
+        #netCDF_single(str(args.filename), str(args.geo_list),str(args.geo_phys), args.output)
     elif args.netCDF_multi: # fuses these together without regard to time
         #python3 gtools.py -nm -fl "/mnt/c/Users/bobgr/Desktop/Spring 2022 NASA/Gridtools Package (Code, README, inputs, outputs, examples, verification)/satellite_paths.txt"  -gl "latitude longitude" -gp "Optical_Depth_Land_And_Ocean" -o "/mnt/c/Users/bobgr/Desktop/Spring 2022 NASA/Gridtools Package (Code, README, inputs, outputs, examples, verification)/SampleOutputs 0000-0059 01-01-2020/multi_ns_result.nc"
         netCDF_multi(str(args.filelist), str(args.geo_list),str(args.geo_phys), args.output)

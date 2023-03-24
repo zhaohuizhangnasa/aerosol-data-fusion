@@ -1,7 +1,20 @@
+__author__ = "Sally Zhao"
+__copyright__ = "Copyright 2023, Pyroscope"
+__credits__ = ["Neil Gutkin", "Jennifer Wei", "Pawan Gupta", "Robert Levy", "Xiaohua Pan", "Zhaohui Zhang"]
+__version__ = "1.0.0"
+__maintainer__ = "Sally Zhao"
+__email__ = "zhaosally0@gmail.com"
+__status__ = "Production"
+# FileParser
+#
+# Aids in parsing file names and paths
+# Controls directory read in
+#
 
 import time_conv
 import yaml
 import os
+from os import walk
 
 # given path to text file contaings paths to files to read read out as list of files within
 def read_file_sat_data(fileloc):
@@ -54,3 +67,22 @@ def read_config(yfile):
     #print(file_io)
 
     return grid_settings, variables, file_io
+
+def read_directory_sat_data(path):
+    f = []
+    filelist = []
+    for (dirpath, dirnames, filenames) in walk(path):
+        #print(dirpath)
+        #print(dirnames)
+        #print(filenames)
+        filenames_path = [dirpath+"/"+f if dirpath[-1]!="/" else dirpath+f for f in filenames]
+        filelist = filelist + filenames_path
+        
+    return filelist
+
+if __name__ == '__main__':
+    path = "/mnt/c/Users/bobgr/Desktop/NASA Spring 2023/Gridtools Package (Code, README, inputs, outputs, examples, verification)/"
+    folder = "LAADSemulation/"
+    f = read_directory_sat_data(path+folder)
+    f = read_folder_sat_data(path+folder)
+    print(f)
