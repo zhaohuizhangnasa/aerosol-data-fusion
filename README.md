@@ -106,7 +106,7 @@ The YAML file also has inputs for user specifications. This includes:
 - file_location_folder (Path to directory folder. Only reads files in the current directory. Takes precedence over  file_location_file.)
 - file_location_file (Path to file that contains paths to individual file paths. Only reads files with paths contained in this file.)
 - output_location (Path to folder for outputs)
-- output_name (User input name. Default is overwritten)
+- output_name (User input name. Default is overwritten. Optional "NA")
 - static_file (Path to static file where certain geophysical variable values are copied from)
 
 When reading a directory with subdirectories (e.g. LAADS archive), input path to the top directory in file_directory_folder. This would then read all files contained in subdirectories. 
