@@ -74,7 +74,42 @@ Users can manually call functions from the command line. User specifications are
 
 Command line input to call YAML file: 
 
-python gtools.py -cfg -fn "C:\LOCATION\CONFIG_FILE_NAME.yml"
+python3 gtools.py -cfg -fn "C:\LOCATION\CONFIG_FILE_NAME.yml"
+
+The command line also has the ability to use YAML file while specifying the time start and end in the command line. This way there is no need to edit the YAML file every time when run (or create a new Docker image).
+
+Command line input to call the YAML file with time start and end: 
+
+python3 gtools.py -cfgtime -fn "C:\LOCATION\CONFIG_FILE_NAME.yml" -ts 2020/01/01/00/00 -te 2020/01/01/00/30
+
+#### User specifications
+
+The YAML file also has inputs for user specifications. This includes:
+
+##### grid_settings: 
+- gridsize (pixel resolution size)
+- limit (rectangular boundaries for gridding - default: [-89.875, 89.875, -179.875, 179.875])
+- fill_value (fill value for areas with no calculations or data)
+- time_start (start of gridding time)
+- time_end (end of gridding time)
+
+##### variables: (variables to take from input files)
+- geo_var (i.e. latitude, longitude)
+- phy_var (geophysical variables)
+- phy_var_nc (naming for geophysical variables in netCDF files (e.g. ABI_G16, ABI_G17, etc))
+- phy_var_hdf (naming for geophysical variables in HDF files (e.g. MODIS))
+- aod_range (user settings for aod. Is overwritten)
+- pixel_range (user settings for pixel range for single gridded point)
+
+##### file_io: (file inputs and outputs)
+- file_directory_folder (Path to directory. Reads all files in subdirectories as well. Takes precedence over file_location_folder and file_location_file. )
+- file_location_folder (Path to directory folder. Only reads files in the current directory. Takes precedence over  file_location_file.)
+- file_location_file (Path to file that contains paths to individual file paths. Only reads files with paths contained in this file.)
+- output_location (Path to folder for outputs)
+- output_name (User input name. Default is overwritten)
+- static_file (Path to static file where certain geophysical variable values are copied from)
+
+When reading a directory with subdirectories (e.g. LAADS archive), input path to the top directory in file_directory_folder. This would then read all files contained in subdirectories.
 
 #### YAML file format
 
@@ -126,7 +161,7 @@ https://ladsweb.modaps.eosdis.nasa.gov/search/
 
 Outputs are in the form of netCDF4 file. Sample output files can be found in the respective folder in the "SampleOutputs 0000-0059 01-01-2020" folder.
 
-Each output file is the fused statistics and grid for the input files for that time interval. If input files range between 00:00-23:59 for a signle day and the time interval is 30 minutes, there will be 48 files produced (each of which is for that 30 minute time interval). These times can be changed by user preference.
+Each output file is the fused statistics and grid for the input files for that time interval. If input files range between 00:00-23:59 for a single day and the time interval is 30 minutes, there will be 48 files produced (each of which is for that 30 minute time interval). These times can be changed by user preference.
 
 The output files here use the sample input files provided and grid/fuse/provide statistics for Optical_Depth_Land_And_Ocean and Solar_Azumith between the times of 00:00 - 01:00, Jan 1 2020.
 
