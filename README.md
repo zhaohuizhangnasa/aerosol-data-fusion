@@ -109,7 +109,12 @@ The YAML file also has inputs for user specifications. This includes:
 - output_name (User input name. Default is overwritten)
 - static_file (Path to static file where certain geophysical variable values are copied from)
 
-When reading a directory with subdirectories (e.g. LAADS archive), input path to the top directory in file_directory_folder. This would then read all files contained in subdirectories.
+When reading a directory with subdirectories (e.g. LAADS archive), input path to the top directory in file_directory_folder. This would then read all files contained in subdirectories. 
+
+When creating a text file with paths to files, input path to this text file in file_directory_file. 
+Paths should be included: 
+C:\LOCATION\SATELLITE1.nc
+C:\LOCATION\SATELLITE2.hdf
 
 #### YAML file format
 
