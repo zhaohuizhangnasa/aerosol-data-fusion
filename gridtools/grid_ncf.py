@@ -56,7 +56,7 @@ def sat_list_name_concat(file_list):
 # saves all satellite sensor gridded data as separate variables
 #def grid_nc_single_statistics(limit, gsize, inlat, inlon, geo_list, phy_list, filelist, filename):
 def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelist, filename, time_start, time_diff, 
-                                       phy_nc=None, phy_hdf=None, static_file = None):
+                                       phy_nc=None, phy_hdf=None, static_file = None, pixel_range = None):
     #start_timer = time.time()
     # define boundary coordinates
     minlat=float(limit[0])
@@ -102,7 +102,7 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
     
     cut_index = filename.rindex("/")
     filename_without_path = filename[cut_index+1 :]
-    ds.LocalGranuleID = filename_without_path
+    ds.GranuleID = filename_without_path
     
     production_yyyymmdd = filename_without_path[-11:-3]
     currtime = datetime.datetime.now()
@@ -220,7 +220,7 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
     solar_zenith_variable.add_offset = float(0)
     #netCDF4.nc_put_att(ds, solar_zenith_variable, 'add_offset', 'f4', 1, 0)
     
-    # solar_zenith_variable[0, :, :] = solar_zenith.get_SZA_parallelized(limit, gsize, time_start, time_diff)
+    #solar_zenith_variable[0, :, :] = solar_zenith.get_SZA_parallelized(limit, gsize, time_start, time_diff)
     #copy solar_zenith
     
     
@@ -340,7 +340,10 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
                         values[index].valid_range = meta[j]["valid_range"]
                     else:
                         # valid range for Pixel must be from 0
-                        values[index].valid_range = [0, 100]
+                        if pixel_range == None:
+                            values[index].valid_range = [0, 100]
+                        else:
+                            values[index].valid_range = [0, 100]
 
                     
                     # instantiate the dictionary for statistics
@@ -479,7 +482,7 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
     # calculate LEOGEO statistics
     # LEOGEO: Mean, STD, NumberOfSensors, SensorWeighting, TotalPixels
     # index of value corresponds to individual sensor
-    # leogeo_stats = {"Mean": [], "STD": [], "TotalPixels":[]}
+    # leogeo_stats = {"Mean": [[g16], [g17], [viirs], [modis]], "STD": [], "TotalPixels":[]}
     # sensor_idx = {} #key = sensor name, value = sensoridx
     leogeo_calculated_statistics = []
     number_of_sensors_variable = []
