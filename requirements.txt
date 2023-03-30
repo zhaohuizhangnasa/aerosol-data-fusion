@@ -7,3 +7,5 @@ python-math
 numba
 pysolar
 joblib
+sunpy
+pvlib
