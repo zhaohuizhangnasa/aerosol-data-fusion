@@ -1,3 +1,15 @@
+__author__ = "Sally Zhao"
+__copyright__ = "Copyright 2023, Pyroscope"
+__credits__ = ["Neil Gutkin", "Jennifer Wei", "Pawan Gupta", "Robert Levy", "Xiaohua Pan", "Zhaohui Zhang"]
+__version__ = "1.0.0"
+__maintainer__ = "Sally Zhao"
+__email__ = "zhaosally0@gmail.com"
+__status__ = "Production"
+# Time Conversion
+#
+# Buckets file names according to user specifications
+#
+
 # due to the introduction of the time variable, we need to know the time of the sensor data
 # this information is not given in the file itself, but rather the file name
 # e.g. "AERDT_L2_ABI_G16.A2021008.0850.001.nc" --> 10/08/2021 8:50 AM

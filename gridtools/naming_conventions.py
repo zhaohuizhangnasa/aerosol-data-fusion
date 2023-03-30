@@ -1,3 +1,16 @@
+__author__ = "Sally Zhao"
+__copyright__ = "Copyright 2023, Pyroscope"
+__credits__ = ["Neil Gutkin", "Jennifer Wei", "Pawan Gupta", "Robert Levy", "Xiaohua Pan", "Zhaohui Zhang"]
+__version__ = "1.0.0"
+__maintainer__ = "Sally Zhao"
+__email__ = "zhaosally0@gmail.com"
+__status__ = "Production"
+# Naming Conventions
+#
+# Generates metadata long_name and names depending on variable input
+# Assists in statistic calculations for LEOGEO aggregation
+#
+
 # imports
 import netCDF4
 import numpy as np
@@ -119,10 +132,10 @@ def calculate_statistic(statistic, data, data2 = None, data3 = None, scale_facto
         """
         
         data = np.array(data)
-        data[data<=-9999.] = np.nan
+        data[data<=-9999.] = np.nan # fill_value
         
         avgtau = np.nanmean(data, axis=0 ) # [ [avgtau for modis a], [avgtau .. ]  ]
-        avgtau = np.nan_to_num(avgtau, nan=-9999)
+        avgtau = np.nan_to_num(avgtau, nan=-9999) # fill_value
         #print(avgtau.flatten())
         #print("ORIGINAL DATA2:", data)
         
@@ -139,6 +152,8 @@ def calculate_statistic(statistic, data, data2 = None, data3 = None, scale_facto
     # https://stats.stackexchange.com/questions/55999/is-it-possible-to-find-the-combined-standard-deviation
     if statistic == "STD":
         
+        # [[std g16], [ g17], []]
+        """
         mean = np.array(data)
         count = np.array(data3)
         variances = np.array(data2)**2
@@ -160,7 +175,7 @@ def calculate_statistic(statistic, data, data2 = None, data3 = None, scale_facto
         stdtau = np.nanstd(data, axis = 0)
         
         return stdtau
-        """
+        
     
     if statistic == "TotalPixels":
         count = np.sum(np.array(data3), axis=0 )

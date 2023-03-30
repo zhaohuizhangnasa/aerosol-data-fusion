@@ -1,3 +1,11 @@
+__author__ = "Sally Zhao"
+__copyright__ = "Copyright 2023, Pyroscope"
+__credits__ = ["Neil Gutkin", "Jennifer Wei", "Pawan Gupta", "Robert Levy", "Xiaohua Pan", "Zhaohui Zhang"]
+__version__ = "1.0.0"
+__maintainer__ = "Sally Zhao"
+__email__ = "zhaosally0@gmail.com"
+__status__ = "Production"
+
 # Satellite Data Import
 # 
 # The satellite data is in the form of netCDF data and will be assumed to be as such going forward.

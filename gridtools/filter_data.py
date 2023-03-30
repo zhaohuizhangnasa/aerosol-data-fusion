@@ -1,3 +1,10 @@
+__author__ = "Sally Zhao"
+__copyright__ = "Copyright 2023, Pyroscope"
+__credits__ = ["Neil Gutkin", "Jennifer Wei", "Pawan Gupta", "Robert Levy", "Xiaohua Pan", "Zhaohui Zhang"]
+__version__ = "1.0.0"
+__maintainer__ = "Sally Zhao"
+__email__ = "zhaosally0@gmail.com"
+__status__ = "Production"
 # Filter data
 # We want to filter out our data to make sure what we're reading is valid and ready to be mapped.
 # 
