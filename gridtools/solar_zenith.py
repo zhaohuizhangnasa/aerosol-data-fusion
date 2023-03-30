@@ -1,4 +1,17 @@
 
+__author__ = "Sally Zhao"
+__copyright__ = "Copyright 2023, Pyroscope"
+__credits__ = ["Neil Gutkin", "Jennifer Wei", "Pawan Gupta", "Robert Levy", "Xiaohua Pan", "Zhaohui Zhang"]
+__version__ = "1.0.0"
+__maintainer__ = "Sally Zhao"
+__email__ = "zhaosally0@gmail.com"
+__status__ = "Production"
+# Solar Zenith
+#
+# Calculates solar zenith and azimuth angles. 
+# Contains manual code calculations validated against pysolar
+#
+
 from pysolar.solar import get_altitude
 import time
 import math
@@ -28,10 +41,6 @@ def get_SZA(row):
     
     return get_altitude(lat, lon, time_obj)
 """
-
-
-
-# using pysolar library
 
 #global variables 
 rad = 180/math.pi
@@ -177,7 +186,7 @@ def date_to_num(datetime_obj):
     return D, time
 
 # calculates solar zenith for singular point
-def get_SZA_new(lat, lon, time_start, time_diff=30):
+def get_SZA(lat, lon, time_start, time_diff=30):
     datetime_obj = pd.to_datetime(time_start)
     datetime_obj = datetime_obj.replace(tzinfo=datetime.timezone.utc)
     
@@ -189,7 +198,7 @@ def get_SZA_new(lat, lon, time_start, time_diff=30):
     #azimuth_rad = sun_azimuth(lat, lon, angle, angle_rad, theta_rad, declin)
     
     return math.degrees(theta_rad)
-
+"""
 # uses pysolar library
 def get_SZA(lat, lon, time_start, time_diff):
     time_obj = pd.to_datetime(time_start) + pd.to_timedelta(time_diff, unit="minute")
@@ -197,94 +206,7 @@ def get_SZA(lat, lon, time_start, time_diff):
     
     #return get_altitude(lat, lon, time_obj.to_pydatetime())
     return (90-get_altitude(lat, lon, time_obj.to_pydatetime()))
-
-def get_SZA_old_manual(latitude, longitude, time_start, time_diff=30):
-    datetime_obj = pd.to_datetime(time_start)
-    #print("TIME:", datetime_obj)
-    
-    # Calculate the day of the year (n)
-    n = datetime_obj.timetuple().tm_yday
-    
-    #print("days: ", n)
-
-    # Calculate the declination angle of the sun (delta)
-    delta = 23.45 * math.degrees(math.sin(math.radians(360 / 365 * (284 + n))))
-
-    # Calculate the difference between the local time and solar time (t)
-    t = (4 * (longitude - 15 * datetime_obj.hour) / 60)
-
-    # Calculate the hour angle (H)
-    #print("hour", datetime_obj.hour, " minute: ", datetime_obj.minute)
-    local_time = (datetime_obj.hour + ((datetime_obj.minute + (datetime_obj.second / 60))/60)) + (longitude/15)
-    #print("Local time: ", local_time)
-    #print("local time first half: ", (datetime_obj.hour + ((datetime_obj.minute + (datetime_obj.second / 60))/60)))
-    B = (n-1) * (360/365)
-    E = 229.2*(0.000075 + 0.001868*math.degrees(math.cos(math.radians(B)))- 0.032077*math.degrees(math.sin(math.radians(B))) - 0.014615*math.degrees(math.cos(math.radians(2*B)))- 0.04089 *math.degrees(math.sin(math.radians(2*B))))
-    solar_time = (datetime_obj.hour - (longitude / 15.0)) + E
-    #print("Solar time", solar_time)
-    #H = (15 * (12 - datetime_obj.hour) + t) % 360
-    local_solar_time = local_time - solar_time
-    H = 15 * (12 -local_solar_time)
-
-    # Calculate the solar zenith angle (theta)
-    sin_theta = math.sin(math.radians(latitude)) * math.sin(math.radians(delta)) + math.cos(math.radians(latitude)) * math.cos(math.radians(delta)) * math.cos(math.radians(H))
-    theta =90- math.degrees(math.acos(math.radians(sin_theta))) #math.degrees(math.asin(sin_theta))
-
-    return theta/.01
-
-
-def get_SZA_array_pysolar(limit, gsize, time_start, time_diff):
-    # limit = [min lat, max lat, min lon, max lon]
-    max_lat = int(1+round(((limit[1]-limit[0])/gsize)))
-    max_lon = int(1+round(((limit[3]-limit[2])/gsize)))
-    solar_zenith = np.zeros((max_lat, max_lon))
-    
-    #loop through array
-    for i in range(0, max_lat):
-        for j in range(0, max_lon):
-            lat = limit[0] +  i * gsize
-            lon = limit[2] + j * gsize
-            
-            sza = get_SZA(lat, lon, time_start, time_diff)
-            solar_zenith[i][j] = sza
-
-    return solar_zenith
-
-
-def get_SZA_array(limit, gsize, time_start, time_diff):
-    # limit = [min lat, max lat, min lon, max lon]
-    max_lat = int(1+round(((limit[1]-limit[0])/gsize)))
-    max_lon = int(1+round(((limit[3]-limit[2])/gsize)))
-            
-    solar_zenith = [[get_SZA(limit[0] +  i * gsize, limit[2] + j * gsize, time_start, time_diff) for j in range(0, max_lon)] for i in range(0, max_lat)]
-
-    return solar_zenith
-
-def lat_lon_array(limit, gsize):
-    max_lat = int(1+round(((limit[1]-limit[0])/gsize)))
-    max_lon = int(1+round(((limit[3]-limit[2])/gsize)))
-    arr = [[[limit[0] +  i * gsize, limit[2] + j * gsize] for j in range(0, max_lon)] for i in range(0, max_lat)]
-    
-    return arr
-
-def get_altitude_tup(lat,lon, when):
-    return get_altitude(lat,lon, when)
-
-def get_SZA_vec(limit, gsize, time_start, time_diff):
-    #3d arr: 2d arr of [lat, lon]
-    max_lat = int(1+round(((limit[1]-limit[0])/gsize)))#int(1+round(((limit[1]-limit[0])/gsize)))
-    max_lon = int(1+round(((limit[3]-limit[2])/gsize)))#int(1+round(((limit[3]-limit[2])/gsize)))
-    lats = [[limit[0] +  i * gsize for j in range(0, max_lon)] for i in range(0, max_lat)]
-    lons = [[limit[2] +  j * gsize for j in range(0, max_lon)] for i in range(0, max_lat)]
-    
-    # time object: when
-    time_obj = pd.to_datetime(time_start) + pd.to_timedelta(time_diff, unit="minute")
-    time_obj = time_obj.replace(tzinfo=datetime.timezone.utc)
-    time_obj = time_obj.to_pydatetime()
-    
-    get_alt_vec = np.vectorize(get_altitude_tup, excluded=['when'])
-    
-    return get_alt_vec(lat=lats, lon=lons, when=time_obj)
+""" 
 
 #@jit(nopython=True)
 def get_SZA_parallelized(limit, gsize, time_start, time_diff,num_cores=1):
@@ -301,7 +223,7 @@ def get_SZA_parallelized(limit, gsize, time_start, time_diff,num_cores=1):
         )
     
     res = np.reshape(res, (-1, max_lon))
-    return res#solar_zenith
+    return res #solar_zenith
 
 if __name__ == '__main__':
     limit = [-90, 90, -180, 180]
@@ -316,9 +238,9 @@ if __name__ == '__main__':
     #testing manual pysolar calculations
     latitude = 39.01#37.7749 # San Francisco latitude
     longitude = -77.01#-122.4194 # San Francisco longitude
-    datetime_obj = datetime.datetime(2023, 2, 23, 18, 14, 0) # February 17, 2023 at 12:00 PM
+    datetime_obj = datetime.datetime(2023, 2, 23, 10, 14, 0) # February 17, 2023 at 12:00 PM
 
-    theta = get_SZA(latitude, longitude, datetime_obj)
+    theta = get_SZA_new(latitude, longitude, datetime_obj)
     print("Solar zenith angle (manual):", theta, "degrees")
     datetime_obj = datetime_obj.replace(tzinfo=datetime.timezone.utc)
     print("Solar zenith angle (pysolar): ", 90 - get_altitude(latitude, longitude, datetime_obj))
