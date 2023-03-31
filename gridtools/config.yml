@@ -19,8 +19,8 @@ file_io:
   # file_location_folder takes precedence over file_location_file unless "NA"
   # file_directory_folder will read subdirectories
   # file_location_folder will not
-  file_directory_folder: "N/A"
-  file_location_folder: "/app/src/inputs/"
+  file_directory_folder: "/app/src/inputs/"
+  file_location_folder: "PATH/to/single/directory/"
   file_location_file: "PATH/file_name_containing_paths_of_specific_files_to_read.txt"
   output_location: "/app/src/outputs/"
   output_name: "OUTPUTv15" # output files will contain this name+time_interval
