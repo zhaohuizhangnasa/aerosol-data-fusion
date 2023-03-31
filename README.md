@@ -122,25 +122,23 @@ C:\LOCATION\SATELLITE2.hdf
 
 ## Docker
 
-The repository includes a Dockerfile, which can be used to a build a Docker image for the package. A Docker image is essentially a blueprint for the creation of a Docker container. A container run from the image built using the provided Dockerfile is a host-isolated environment that can be used to execute the data fusion package with provided user inputs.
+The repository includes a Dockerfile, which was used to a build a Docker image for the package, which is available here: https://hub.docker.com/repository/docker/neilgutkin/aerosol-data-fusion/general.
 
-Configuration of the YAML file is required for the package to be run with this Dockerfile. The input and output location fields in the YAML should be set to the paths of the input and output as they appear in the container. For example, if the user would like to follow the example setup outlined below, the input and output locations in the YAML should be set to /app/src/inputs/ and /app/src/outputs/, respectively. Note that when it is run, the container will automatically execute the package using the configuration in the YAML file.  If the YAML file is modified, the image will need to be re-built before the changes are reflected in a containerized execution. 
+A Docker image is essentially a blueprint for the creation of a Docker container. A container run from the image is a host-isolated environment that can be used to execute the data fusion package with provided user inputs.
 
-With Docker installed, the first step to running the package in a Docker container is to build the image. Once in the directory with the Dockerfile, a user can run the following command to build the image, where [image_name] denotes a name for the image:
+Configuration of a YAML file is required for the package to be run with Docker. Through this configuration, the user specifies the various parameters for the package run. The template for this YAML file is available in the source directory of this repository, under the name "example_config.yml". The input, output, and static file location fields in the YAML should be set to the paths of the input and output as they appear in the container - the "file_io" section of the example config is already set up for the provided Docker image, so there is no need to change it. 
 
-docker build . -t [image_name]
+The next step is setting up the file system on the host. The input file directory, output file directory, config.yml file, and static file must all be grouped into one directory on the host machine, referred to as the "ioFiles" directory in the example below. 
 
-Below is an example:
+Finally, it's time to run a container from the Docker image. This step requires the user to specify the location of the ioFiles directory that the package should use. This data will be shared between the container environment and the host, meaning that changes made in the container (e.g. by the package) will be reflected on the host. To run the container, a user can execute the following command:
 
-docker build . -t data-fusion
-
-Once the command executes, a Docker image will have been created. Next, the user will need to run a container from the image. This step requires the user to specify the input and output data that the package should use. This data will be shared between the container environment and the host, meaning that changes made in the container (e.g. by the package) will be reflected on the host. To run the container, a user can execute the following command:
-
-docker run [flags] -v "/absolute/path/to/host/input:/absolute/path/to/container/input" -v "/absolute/path/to/host/output:/absolute/path/to/container/output" [image_name]:[version]
+docker run [flags] -v "/your/host/path/to/ioFilesDirectory:/app/src/ioFiles" [image_name]:[version] python ./gridtools/gtools.py -cfg -fn /app/src/ioFiles/config.yml
 
 Below is an example - note especially the appearance of the windows source path (/c/ instead of C:/):
 
-docker run -v "/c/Users/Neil/Desktop/Work/Package Data/SampleInputs 0000-0059 01-01-2020:/app/src/inputs" -v "/c/Users/Neil/Desktop/Work/Package Data/SampleOutputs 0000-0059 01-01-2020:/app/src/outputs" data-fusion:latest
+docker run -it --gpus all -v "/c/Users/Neil/Desktop/Work/s23/ioFiles:/app/src/ioFiles" aerosol-df:v0 python ./gridtools/gtools.py -cfg -fn /app/src/ioFiles/config.yml
+
+After execution, the package will run and the output files directory on the host machine will be populated with the newly fused outputs. 
 
 ## Example Inputs / Outputs
 
