@@ -138,7 +138,7 @@ Below is an example - note especially the appearance of the windows source path 
 
 docker run -it --gpus all -v "/c/Users/Neil/Desktop/Work/s23/ioFiles:/app/src/ioFiles" aerosol-df:v0 python ./gridtools/gtools.py -cfg -fn /app/src/ioFiles/config.yml
 
-After execution, the package will run and the output files directory on the host machine will be populated with the newly fused outputs. 
+If running on s4psci or a similar server environment, permissions might require that you add the :z flag to the command when linking directories. In the above example, you would replace "/c/Users/Neil/Desktop/Work/s23/ioFiles:/app/src/ioFiles" with "/c/Users/Neil/Desktop/Work/s23/ioFiles:/app/src/ioFiles:z". After execution, the package will run and the output files directory on the host machine will be populated with the newly fused outputs. 
 
 ## Example Inputs / Outputs
 
