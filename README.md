@@ -1,6 +1,6 @@
 # README
 
-Author: Sally Zhao
+Author: Sally Zhao, Neil Gutkin
 
 ## Introduction and Overview
 
