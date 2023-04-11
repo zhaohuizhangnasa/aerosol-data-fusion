@@ -36,7 +36,9 @@ import datetime
 
 # full satellite list 
 # used to check if any satellites are missing
-full_satellite_list = ['AERDT_L2_ABI_G16', 'AERDT_L2_ABI_G17', 'AERDT_L2_AHI_H08', 'AERDT_L2_VIIRS_SNPP', 'MOD04_L2', 'MYD04_L2']
+#full_satellite_list = ['AERDT_L2_ABI_G16', 'AERDT_L2_ABI_G17', 'AERDT_L2_AHI_H08', 'AERDT_L2_VIIRS_SNPP', 'MOD04_L2', 'MYD04_L2']
+full_satellite_list = ['ABI_G16', 'ABI_G17', 'AHI_H08', 'VIIRS_SNPP', 'MOD04', 'MYD04']
+
 
 # takes in dictionary 
 # keys are satellite names, values = array of filepaths
@@ -220,22 +222,21 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
     solar_zenith_variable.add_offset = float(0)
     #netCDF4.nc_put_att(ds, solar_zenith_variable, 'add_offset', 'f4', 1, 0)
     
-    solar_zenith_variable[0, :, :] = solar_zenith.get_SZA_parallelized(limit, gsize, time_start, time_diff)
+    #solar_zenith_variable[0, :, :] = solar_zenith.get_SZA_parallelized(limit, gsize, time_start, time_diff)
     #copy solar_zenith
     
     
-    #path = "/mnt/c/Users/bobgr/Desktop/NASA Spring 2023/Gridtools Package (Code, README, inputs, outputs, examples, verification)/"
-    #fn = path + "SampleOutputs 0000-0059 01-01-2020/XAERDT_L3_MEASURES_QD_HH.20200101.0000.V0.20230307.nc"
-    #src = netCDF4.Dataset(fn)
-    #for name, variable in src.variables.items():
-    #    if name == "Solar_Zenith_Angle":
-    #        print("metadata: ", src[name].__dict__)
-    #solar_zenith_variable[0, :, :] = src["Solar_Zenith_Angle"][:]
-    #src.close()
+    path = "/mnt/c/Users/bobgr/Desktop/NASA Spring 2023/Gridtools Package (Code, README, inputs, outputs, examples, verification)/"
+    fn = path + "SampleOutputs 0000-0059 01-01-2020/XAERDT_L3_MEASURES_QD_HH.20200101.0000.V0.20230307.nc"
+    src = netCDF4.Dataset(fn)
+    for name, variable in src.variables.items():
+        if name == "Solar_Zenith_Angle":
+            print("metadata: ", src[name].__dict__)
+    solar_zenith_variable[0, :, :] = src["Solar_Zenith_Angle"][:]
+    src.close()
     
     
     print("solar zenith done")
-    
     # for calculating LEOGEO statistics
     # LEOGEO: Mean, STD, NumberOfSensors, SensorWeighting, TotalPixels
     # index of value corresponds to individual sensor
@@ -248,7 +249,16 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
     # instantiate the satellites that are not present
     # no inputs for these satellites, blank data for their netCDF4 output variables
     
-    not_present_satellites = [s for s in full_satellite_list if s not in list(filelist.keys())]
+    #not_present_satellites = [s for s in full_satellite_list if s not in list(filelist.keys())]
+    
+    # accounts for abbreviations
+    present_satellites = []
+    for s in full_satellite_list: #check all satellites
+        for present_s in list(filelist.keys()):
+            if s in present_s: #satellite is present
+                present_satellites.append(s)
+                
+    not_present_satellites = [s for s in full_satellite_list if s not in present_satellites]
     
     for s_name in not_present_satellites: 
         for j, p_vars in enumerate(phy_list):
@@ -437,6 +447,7 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
 
                 index = len(values) #i * len(phy_list) + j
                 name = naming_conventions.nc_var_name(p_vars, s_name) #str(s_name+"_"+p_vars)
+                
                 values.append(ds.createVariable(name, np.short, ('time', 'lat', 'lon', ), fill_value=meta[j]["_FillValue"]))
                 
                 # metadata
