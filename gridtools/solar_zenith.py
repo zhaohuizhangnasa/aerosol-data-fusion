@@ -61,15 +61,6 @@ declin = declin / rad	;convert to radians
 """
 def solar_declination_angle(D):
     theta_0 = (360.0 * (D - 1) / 365.0) / rad #converts to radians
-
-    # theta_0 is currently in radians
-    declin  = (0.396372 - 22.91327*math.degrees(math.cos(theta_0))
-            + 4.02543*math.degrees(math.sin(theta_0) )
-            - 0.387205*math.degrees(math.cos(2.0*theta_0))
-            + 0.051967*math.degrees(math.sin(2.0*theta_0) )
-            - 0.154527*math.degrees(math.cos(3.0*theta_0) )
-            + 0.084798*math.degrees(math.sin(3.0*theta_0)))
-    
     declin  = (0.396372 - 22.91327*math.cos(theta_0)
             + 4.02543*math.sin(theta_0) 
             - 0.387205*math.cos(2.0*theta_0)
@@ -82,15 +73,6 @@ def solar_declination_angle(D):
 @cuda.jit(device=True)
 def sda_gpu(D, rad):
     theta_0 = (360.0 * (D - 1) / 365.0) / rad #converts to radians
-
-    # theta_0 is currently in radians
-    declin  = (0.396372 - 22.91327*(rad*math.cos(theta_0))
-            + 4.02543*(rad*math.sin(theta_0) )
-            - 0.387205*(rad*math.cos(2.0*theta_0))
-            + 0.051967*(rad*math.sin(2.0*theta_0) )
-            - 0.154527*(rad*math.cos(3.0*theta_0) )
-            + 0.084798*(rad*math.sin(3.0*theta_0)))
-    
     declin  = (0.396372 - 22.91327*math.cos(theta_0)
             + 4.02543*math.sin(theta_0) 
             - 0.387205*math.cos(2.0*theta_0)
@@ -116,12 +98,6 @@ lon_rad = lon / rad
 angle_rad  = angle / rad
 """
 def time_correction_solar_angle(theta_0, time, lat, lon): #assume theta_0 in radians
-    
-    correct  = (0.004297 + 0.107029*math.degrees(math.cos(theta_0)) 
-                - 1.837877*math.degrees(math.sin(theta_0))
-                - 0.837378*math.degrees(math.cos(2.0*theta_0))
-                - 2.342824*math.degrees(math.sin(2.0*theta_0)))
-    
     correct = (0.004297 + 0.107029*math.cos(theta_0)
                 - 1.837877*math.sin(theta_0)
                 - 0.837378*math.cos(2.0*theta_0)
@@ -144,12 +120,6 @@ def time_correction_solar_angle(theta_0, time, lat, lon): #assume theta_0 in rad
 
 @cuda.jit(device=True)
 def tcsa_gpu(theta_0, time, lat, lon, rad): #assume theta_0 in radians
-    
-    correct  = (0.004297 + 0.107029*(rad*math.cos(theta_0)) 
-                - 1.837877*(rad*math.sin(theta_0))
-                - 0.837378*(rad*math.cos(2.0*theta_0))
-                - 2.342824*(rad*math.sin(2.0*theta_0)))
-    
     correct = (0.004297 + 0.107029*math.cos(theta_0)
                 - 1.837877*math.sin(theta_0)
                 - 0.837378*math.cos(2.0*theta_0)
