@@ -222,18 +222,18 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
     solar_zenith_variable.add_offset = float(0)
     #netCDF4.nc_put_att(ds, solar_zenith_variable, 'add_offset', 'f4', 1, 0)
     
-    #solar_zenith_variable[0, :, :] = solar_zenith.get_SZA_parallelized(limit, gsize, time_start, time_diff)
+    solar_zenith_variable[0, :, :] = solar_zenith.get_SZA_parallelized(limit, gsize, time_start, time_diff)
     #copy solar_zenith
     
     
-    path = "/mnt/c/Users/bobgr/Desktop/NASA Spring 2023/Gridtools Package (Code, README, inputs, outputs, examples, verification)/"
-    fn = path + "SampleOutputs 0000-0059 01-01-2020/XAERDT_L3_MEASURES_QD_HH.20200101.0000.V0.20230307.nc"
-    src = netCDF4.Dataset(fn)
-    for name, variable in src.variables.items():
-        if name == "Solar_Zenith_Angle":
-            print("metadata: ", src[name].__dict__)
-    solar_zenith_variable[0, :, :] = src["Solar_Zenith_Angle"][:]
-    src.close()
+    #path = "/mnt/c/Users/bobgr/Desktop/NASA Spring 2023/Gridtools Package (Code, README, inputs, outputs, examples, verification)/"
+    #fn = path + "SampleOutputs 0000-0059 01-01-2020/XAERDT_L3_MEASURES_QD_HH.20200101.0000.V0.20230307.nc"
+    #src = netCDF4.Dataset(fn)
+    #for name, variable in src.variables.items():
+    #    if name == "Solar_Zenith_Angle":
+    #        print("metadata: ", src[name].__dict__)
+    #solar_zenith_variable[0, :, :] = src["Solar_Zenith_Angle"][:]
+    #src.close()
     
     
     print("solar zenith done")

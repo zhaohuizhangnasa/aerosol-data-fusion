@@ -78,6 +78,27 @@ def solar_declination_angle(D):
             + 0.084798*math.sin(3.0*theta_0))
     declin = declin / rad  #converts to radians
     return theta_0, declin
+
+@cuda.jit(device=True)
+def sda_gpu(D, rad):
+    theta_0 = (360.0 * (D - 1) / 365.0) / rad #converts to radians
+
+    # theta_0 is currently in radians
+    declin  = (0.396372 - 22.91327*(rad*math.cos(theta_0))
+            + 4.02543*(rad*math.sin(theta_0) )
+            - 0.387205*(rad*math.cos(2.0*theta_0))
+            + 0.051967*(rad*math.sin(2.0*theta_0) )
+            - 0.154527*(rad*math.cos(3.0*theta_0) )
+            + 0.084798*(rad*math.sin(3.0*theta_0)))
+    
+    declin  = (0.396372 - 22.91327*math.cos(theta_0)
+            + 4.02543*math.sin(theta_0) 
+            - 0.387205*math.cos(2.0*theta_0)
+            + 0.051967*math.sin(2.0*theta_0) 
+            - 0.154527*math.cos(3.0*theta_0) 
+            + 0.084798*math.sin(3.0*theta_0))
+    declin = declin / rad  #converts to radians
+    return theta_0, declin
     
 ### Time correction for solar angle
 """    
@@ -121,6 +142,35 @@ def time_correction_solar_angle(theta_0, time, lat, lon): #assume theta_0 in rad
     
     return angle, angle_rad, lat_rad, lon_rad
 
+@cuda.jit(device=True)
+def tcsa_gpu(theta_0, time, lat, lon, rad): #assume theta_0 in radians
+    
+    correct  = (0.004297 + 0.107029*(rad*math.cos(theta_0)) 
+                - 1.837877*(rad*math.sin(theta_0))
+                - 0.837378*(rad*math.cos(2.0*theta_0))
+                - 2.342824*(rad*math.sin(2.0*theta_0)))
+    
+    correct = (0.004297 + 0.107029*math.cos(theta_0)
+                - 1.837877*math.sin(theta_0)
+                - 0.837378*math.cos(2.0*theta_0)
+                - 2.342824*math.sin(2.0*theta_0))
+                    
+                
+    angle = (time - 12.0) * 15.0 + lon + correct
+    
+    if angle > 180:
+        angle = angle - 360
+    if angle < -180:
+        angle = angle + 360
+        
+    lat_rad = lat / rad
+    lon_rad = lon / rad
+
+    angle_rad  = angle / rad
+    
+    return angle, angle_rad, lat_rad, lon_rad
+
+
 ### Sun zenith
 """
 tmp1 = SIN(lat_rad)*SIN(declin) + COS(lat_rad)*COS(declin)*COS(angle_rad)
@@ -139,6 +189,28 @@ ENDELSE
 theta_rad = ACOS(tmp1)
 """
 def sun_zenith(lat_rad, lon_rad, angle_rad, declin):
+    
+    #tmps are in radians
+    tmp1 = math.sin(lat_rad)*math.sin(declin) + math.cos(lat_rad)*math.cos(declin)*math.cos(angle_rad)
+    #tmp1 = (math.degrees(math.sin(lat_rad))* math.degrees(math.sin(declin)) 
+    #        + math.degrees(math.cos(lat_rad)) * math.degrees(math.cos(declin)) * math.degrees(math.cos(angle_rad)))
+    tmp2 = abs(tmp1)
+    
+    if tmp2 > 1.1:
+        print("Error in acos argument in sun zenith: ", tmp1)
+    else:
+        if tmp2 > 1.0:
+            if tmp1 > 0:
+                tmp1 = 1.0
+            if tmp1 < 0:
+                tmp1 = -1.0
+                
+    theta_rad = math.acos(tmp1)
+    
+    return theta_rad
+
+@cuda.jit(device=True)
+def sz_gpu(lat_rad, lon_rad, angle_rad, declin):
     
     #tmps are in radians
     tmp1 = math.sin(lat_rad)*math.sin(declin) + math.cos(lat_rad)*math.cos(declin)*math.cos(angle_rad)
@@ -198,6 +270,26 @@ def get_SZA(lat, lon, time_start, time_diff=30):
     #azimuth_rad = sun_azimuth(lat, lon, angle, angle_rad, theta_rad, declin)
     
     return math.degrees(theta_rad)
+
+@cuda.jit
+def get_SZA_GPU(lats, lons, N, D, time, sza, rad):
+    # Establish thread and block indices
+    t = cuda.threadIdx.x
+    #-------------------------
+    d = cuda.blockDim.x
+    #-------------------------
+    b = cuda.blockIdx.x
+
+    # Compute global array index
+    idx = t + b*d
+
+    if idx < N:
+        theta_0, declin = sda_gpu(D, rad)
+        angle, angle_rad, lat_rad, lon_rad = tcsa_gpu(theta_0, time, lats[idx], lons[idx], rad)
+        theta_rad = sz_gpu(lat_rad, lon_rad, angle_rad, declin)
+
+        sza[idx] = theta_rad * rad # to degrees
+
 """
 # uses pysolar library
 def get_SZA(lat, lon, time_start, time_diff):
@@ -216,6 +308,28 @@ def get_SZA_parallelized(limit, gsize, time_start, time_diff,num_cores=1):
             
     #solar_zenith = Parallel(n_jobs=num_cores)([get_SZA(limit[0] +  i * gsize, limit[2] + j * gsize, time_start, time_diff) for j in range(0, max_lon)] for i in range(0, max_lat))
     #res = Parallel(n_jobs=1)(delayed(math.sqrt)(i**2) for i in range(10))
+    if (len(cuda.list_devices()) != 0):
+        datetime_obj = pd.to_datetime(time_start)
+        datetime_obj = datetime_obj.replace(tzinfo=datetime.timezone.utc)   
+        D, time = date_to_num(datetime_obj)
+
+        lats = np.array([[limit[0] +  i * gsize for j in range(0, max_lon)] for i in range(0, max_lat)]).flatten()
+        lons = np.array([[limit[2] +  j * gsize for j in range(0, max_lon)] for i in range(0, max_lat)]).flatten()
+        N = len(lats)
+        sza = np.zeros(N)
+
+        d_lats = cuda.to_device(lats)
+        d_lons = cuda.to_device(lons)
+        d_sza = cuda.to_device(sza)
+
+        tpb = (256)
+        bpg = (int(np.ceil(N / tpb)))
+        get_SZA_GPU[bpg, tpb](d_lats, d_lons, N, D, time, d_sza, rad)
+
+        sza = d_sza.copy_to_host()
+        return sza
+
+        
     res = Parallel(n_jobs = num_cores)( 
             delayed( get_SZA )(limit[0] +  i * gsize, limit[2] + j * gsize, time_start, time_diff) 
                                     for i in range(0, max_lat)
@@ -240,7 +354,7 @@ if __name__ == '__main__':
     longitude = -77.01#-122.4194 # San Francisco longitude
     datetime_obj = datetime.datetime(2023, 2, 23, 10, 14, 0) # February 17, 2023 at 12:00 PM
 
-    theta = get_SZA_new(latitude, longitude, datetime_obj)
+    theta = get_SZA(latitude, longitude, datetime_obj)
     print("Solar zenith angle (manual):", theta, "degrees")
     datetime_obj = datetime_obj.replace(tzinfo=datetime.timezone.utc)
     print("Solar zenith angle (pysolar): ", 90 - get_altitude(latitude, longitude, datetime_obj))
