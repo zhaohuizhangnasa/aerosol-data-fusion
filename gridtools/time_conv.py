@@ -15,6 +15,8 @@ __status__ = "Production"
 # e.g. "AERDT_L2_ABI_G16.A2021008.0850.001.nc" --> 10/08/2021 8:50 AM
 import datetime
 
+full_satellite_list = ['ABI_G16', 'ABI_G17', 'AHI_H08', 'VIIRS_SNPP', 'MOD04', 'MYD04']
+
 # given 'yyyy/mm/dd/hr/mm' string
 # converts to datetime object
 def to_datetime(date_string):
@@ -80,11 +82,18 @@ def split_filenames(filelist):
         d = {} # dictionary
 
         for f in time:
-            #print(f.split("/")[-1].split(".")[0])
-            if f.split("/")[-1].split(".")[0] not in d: # add to dict if not already present
-                d[f.split("/")[-1].split(".")[0]] = [f]
+            #retrieve sensor name from file format
+            s_name = f.split("/")[-1].split(".")[0]
+            
+            #check to see if sensor is from list of the six measures satellites
+            for measures_satellite in full_satellite_list:
+                if measures_satellite in s_name:
+                    s_name = measures_satellite
+                    
+            if s_name not in d: # add to dict if not already present
+                d[s_name] = [f]
             else:
-                d[f.split("/")[-1].split(".")[0]].append(f)
+                d[s_name].append(f)
 
         #split_files.append(list(d.values()))
         split_files.append(d)
@@ -97,3 +106,27 @@ def split_filenames(filelist):
         print("Too many sensors")
     """
     return split_files
+
+#testing
+if __name__ == '__main__':
+    files2019 = ["XAERDT_L2_ABI_G16.A2019208.0000.001.2022260004939.nc",
+                 "XAERDT_L2_ABI_G16.A2019208.0010.001.2022260004939.nc",
+                 "XAERDT_L2_ABI_G16.A2019208.0020.001.2022260004940.nc",
+                 "XAERDT_L2_ABI_G16.A2019208.0030.001.2022260004941.nc",
+                "XAERDT_L2_ABI_G16.A2019208.0040.001.2022260004942.nc",
+                "XAERDT_L2_ABI_G16.A2019208.0050.001.2022260004942.nc",
+                "XAERDT_L2_ABI_G16.A2019208.0100.001.2022260004939.nc"]
+    start = to_datetime("2019/07/27/00/00")
+    end = to_datetime("2019/07/27/00/40")
+    
+    files_split_time = split_filetimes(files2019, start, end, 30)
+    #print("Split on time: ", files_split_time)
+    
+    files_split_sensors = split_filenames(files_split_time)
+    
+    #print("\n\nSplit on sensors: ", files_split_sensors)
+    print(files_split_sensors)
+    
+    for key in files_split_sensors[0]:
+        print(key)
+    
