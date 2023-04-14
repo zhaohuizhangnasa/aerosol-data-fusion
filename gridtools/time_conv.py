@@ -15,7 +15,7 @@ __status__ = "Production"
 # e.g. "AERDT_L2_ABI_G16.A2021008.0850.001.nc" --> 10/08/2021 8:50 AM
 import datetime
 
-full_satellite_list = ['ABI_G16', 'ABI_G17', 'AHI_H08', 'VIIRS_SNPP', 'MOD04', 'MYD04']
+full_satellite_list = ['ABI_G16', 'ABI_G17', 'AHI_H08', 'VIIRS_SNPP', 'MOD04', 'MYD04', 'MODIS_T', 'MODIS_A']
 
 # given 'yyyy/mm/dd/hr/mm' string
 # converts to datetime object
@@ -89,6 +89,10 @@ def split_filenames(filelist):
             for measures_satellite in full_satellite_list:
                 if measures_satellite in s_name:
                     s_name = measures_satellite
+                    if measures_satellite == "MOD04" or measures_satellite == "MODIS_T":
+                        s_name = "MOD04"
+                    elif measures_satellite == "MYD04" or measures_satellite == "MODIS_A":
+                        s_name = "MYD04"
                     
             if s_name not in d: # add to dict if not already present
                 d[s_name] = [f]
