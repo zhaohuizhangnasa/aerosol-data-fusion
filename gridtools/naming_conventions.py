@@ -67,7 +67,7 @@ def nc_var_name(geophys_name, sensor_name, statistic = None):
     
     return name
 
-def nc_long_name(geophys_name, sensor_name, statistic = None, aod_long = None):
+def nc_long_name(geophys_name, sensor_name, statistic = None, aod_long = None, filtered=False):
     name = ""
     if statistic == None:
         for sensor_key in sensor_references_long: #add appropriate sensor name
@@ -97,7 +97,10 @@ def nc_long_name(geophys_name, sensor_name, statistic = None, aod_long = None):
                 name = statistics_references_long_LEOGEO[stat]
                 curr_stat = statistic
                 if statistic =="Mean" or statistic =="STD" or statistic =="Pixels" or statistic == "TotalPixels":
-                    name = name + " " + "AOD at 0.55 micron (Image_Optical_Depth_Land_And_Ocean) for both ocean (Average) and land (corrected) with all quality data (Quality flag = 0, 1, 2, 3)"
+                    if filtered:
+                        name = name + " " + "AOD at 0.55 micron (Optical_Depth_Land_And_Ocean) for both ocean (Average) and land (corrected) with all quality data (Quality flag = 0, 1, 2, 3)"
+                    else:
+                        name = name + " " + "AOD at 0.55 micron (Image_Optical_Depth_Land_And_Ocean) for both ocean (Average) and land (corrected) with all quality data (Quality flag = 0, 1, 2, 3)"
         for sensor_key in sensor_references_long: #add appropriate sensor name
             if sensor_key in sensor_name:
                 #name = name + " " + sensor_references_long[sensor_key] 

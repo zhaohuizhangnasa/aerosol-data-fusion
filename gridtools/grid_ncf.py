@@ -222,7 +222,7 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
     solar_zenith_variable.add_offset = float(0)
     #netCDF4.nc_put_att(ds, solar_zenith_variable, 'add_offset', 'f4', 1, 0)
     
-    solar_zenith_variable[0, :, :] = solar_zenith.get_SZA_parallelized(limit, gsize, time_start, time_diff)
+    #solar_zenith_variable[0, :, :] = solar_zenith.get_SZA_parallelized(limit, gsize, time_start, time_diff)
     #copy solar_zenith
     
     
@@ -538,7 +538,7 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
                 
                 if (("Filtered" in name) or ("filtered" in name)) and (statistic == "Mean"):
                     leogeo_calculated_statistics[leogeo_index][i].long_name = naming_conventions.nc_long_name(p_var, "LEOGEO", 
-                                                                                          statistic) + " for the grid. " + "It is average of individual sensor gridded AODs (i.e. AOD_FilteredQA_550_*_*_Mean)" #statistics_references_long
+                                                                                          statistic, True) + " for the grid. " + "It is average of individual sensor gridded AODs (i.e. AOD_FilteredQA_550_*_*_Mean)" #statistics_references_long
                 else:
                     leogeo_calculated_statistics[leogeo_index][i].long_name = naming_conventions.nc_long_name(p_var, "LEOGEO", 
                                                                                           statistic) + " for the grid"
