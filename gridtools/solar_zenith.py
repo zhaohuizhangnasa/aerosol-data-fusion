@@ -11,24 +11,10 @@ __status__ = "Production"
 # Calculates solar zenith and azimuth angles. 
 # Contains manual code calculations validated against pysolar
 #
-
-from pysolar.solar import get_altitude
-import time
 import math
-
-from sunpy.coordinates import frames
-#from sunpy.time import Time
-from astropy.coordinates import EarthLocation
-from pvlib import solarposition
-import pytz
-
-
 import datetime
 import numpy as np
 import pandas as pd
-
-import numba as nb
-from numba import jit
 from numba import cuda
 
 from joblib import Parallel, delayed
@@ -308,25 +294,3 @@ def get_SZA_parallelized(limit, gsize, time_start, time_diff,num_cores=1):
     
     res = np.reshape(res, (-1, max_lon))
     return res #solar_zenith
-
-if __name__ == '__main__':
-    limit = [-90, 90, -180, 180]
-    #limit = [-10, 10, -20, 20]
-    gsize = 0.25
-    time_start = "2020-01-01 00:00:00"
-    time_diff = 30
-    
-    time_obj = pd.to_datetime(time_start) + pd.to_timedelta(time_diff, unit="minute")
-    print(time_obj)
-    
-    #testing manual pysolar calculations
-    latitude = 39.01#37.7749 # San Francisco latitude
-    longitude = -77.01#-122.4194 # San Francisco longitude
-    datetime_obj = datetime.datetime(2023, 2, 23, 10, 14, 0) # February 17, 2023 at 12:00 PM
-
-    theta = get_SZA(latitude, longitude, datetime_obj)
-    print("Solar zenith angle (manual):", theta, "degrees")
-    datetime_obj = datetime_obj.replace(tzinfo=datetime.timezone.utc)
-    print("Solar zenith angle (pysolar): ", 90 - get_altitude(latitude, longitude, datetime_obj))
-    
-    
