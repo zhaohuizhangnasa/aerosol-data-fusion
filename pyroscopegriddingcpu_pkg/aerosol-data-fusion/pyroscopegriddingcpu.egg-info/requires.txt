@@ -1,0 +1,7 @@
+pyhdf
+numpy==1.23.5
+joblib==1.2.0
+netCDF4==1.6.3
+pandas==2.0.0
+pyyaml==6.0
+argparse
