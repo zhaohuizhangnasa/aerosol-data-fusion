@@ -39,6 +39,8 @@ def grid(limit,gsize,indata,inlat,inlon): #valid_range
     minlon=float(limit[2])
     maxlon=float(limit[3])
     
+    dxx = gsize/2.0
+        
     # pixel dimensions
     xdim=int(1+round((abs(maxlon-minlon)/dx)))
     ydim=int(1+round((abs(maxlat-minlat)/dy)))
@@ -46,8 +48,10 @@ def grid(limit,gsize,indata,inlat,inlon): #valid_range
     sumtau=np.zeros((xdim,ydim)) # init 2d array map with zeros
     sqrtau=np.zeros((xdim,ydim))
     count=np.zeros((xdim,ydim))
+    
     mintau=np.full([xdim,ydim],5000.0) # init 2d array map with defaults
     maxtau=np.full([xdim,ydim],-100.0) # fill value, do not change min max
+    
     avgtau=np.full([xdim,ydim],-9999.0) # write nans as fill values rather than nans
     stdtau=np.full([xdim,ydim],-9999.0)
     grdlat=np.full([xdim,ydim],-9999.0)
@@ -56,30 +60,27 @@ def grid(limit,gsize,indata,inlat,inlon): #valid_range
     for ii in range(len(indata)):
         #check within bounds
         # indata should be filtered based on range (not 0, 5 but rather valid_range)
-        if (inlat[ii]>=minlat and inlat[ii] <= maxlat and inlon[ii]>= minlon and inlon[ii]<= maxlon): # and indata[ii] >0.0 and indata[ii]<=5.0):
+        if (inlat[ii]>=minlat-dxx and inlat[ii] <= maxlat+dxx and inlon[ii]>= minlon-dxx and inlon[ii]<= maxlon+dxx): # and indata[ii] >0.0 and indata[ii]<=5.0):
             # pixel coordinates for bounds
             i=int(round((inlon[ii]-minlon)/dx))
             j=int(round((inlat[ii]-minlat)/dy))
 
-            # 0 check
-            # disregard if 0
-            if indata[ii] != 0:
-                # do not take nan values into account
-                # nans should not be counted
-                sumtau[i,j]=sumtau[i,j]+indata[ii]
-                sqrtau[i,j]=sqrtau[i,j]+(indata[ii])**2
-                count[i,j]+=1
-                if indata[ii] < mintau[i,j]:
-                    mintau[i,j]=indata[ii]
-                if indata[ii] > maxtau[i,j]:
-                    maxtau[i,j]=indata[ii]
+            # do not take nan values into account
+            # nans should not be counted
+            sumtau[i,j]=sumtau[i,j]+indata[ii]
+            sqrtau[i,j]=sqrtau[i,j]+(indata[ii])**2
+            count[i,j]+=1
+            if indata[ii] < mintau[i,j]:
+                mintau[i,j]=indata[ii]
+            if indata[ii] > maxtau[i,j]:
+                maxtau[i,j]=indata[ii]
                 
             #print("updated: ", sumtau[i,j], mintau[i,j], maxtau[i,j])
 
     for i in range(xdim):
         for j in range(ydim):
             grdlon[i,j]=dx*i+minlon
-            grdlat[i,j]=dx*j+minlat
+            grdlat[i,j]=dy*j+minlat
             if count[i,j] > 0:
                 avgtau[i,j]=sumtau[i,j]/count[i,j]
                 #para1=(1/count[i,j])*(sqrtau[i,j])+(count[i,j])*avgtau[i,j]-2*(avgtau[i,j])*(sumtau[i,j])
@@ -91,9 +92,9 @@ def grid(limit,gsize,indata,inlat,inlon): #valid_range
                         stdtau[i,j]=np.sqrt(para1)
                         
     # change none to fill values
-    mintau[mintau==5000]=None
-    maxtau[maxtau==-1]=None
-    avgtau[avgtau==-1]=None
+    mintau[mintau==5000.]=None
+    maxtau[maxtau==-100.]=None
+    avgtau[avgtau==-9999.]=None
 
     return avgtau,stdtau,grdlat,grdlon,mintau,maxtau,count,sumtau
 

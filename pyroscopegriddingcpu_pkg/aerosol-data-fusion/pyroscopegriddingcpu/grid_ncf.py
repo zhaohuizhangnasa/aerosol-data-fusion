@@ -149,8 +149,8 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
 
     
     #set lats and lons  (or rather y and x)
-    lats = ds.createVariable('latitude', 'f4', ('lat',), fill_value=-9999.) #latitude is fatitude
-    lons = ds.createVariable('longitude', 'f4', ('lon',), fill_value=-9999.)
+    lats = ds.createVariable('lat', 'f4', ('lat',), fill_value=-9999.) #latitude is fatitude
+    lons = ds.createVariable('lon', 'f4', ('lon',), fill_value=-9999.)
     sensor_var = ds.createVariable("sensors", np.short, ('sensor', ))
     
     #sensors metadata
@@ -276,20 +276,27 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
                 
     not_present_satellites = [s for s in full_satellite_list if s not in present_satellites]
     
-    for s_name in not_present_satellites: 
-        for j, p_vars in enumerate(phy_list):
+    for s_name in not_present_satellites: # not present satellites
+        for j, p_vars in enumerate(phy_list): # creating a variable for each geophysical variable 
             if not("Sensor_Zenith" in p_vars or "Scattering_Angle" in p_vars):
                 aod_statistics = ["Mean", "STD", "Pixels"]
                 
                 for aod_stat in aod_statistics:
                     name = nc_var_name(p_vars, s_name, aod_stat) #str(s_name+"_"+p_vars)
-                    ds.createVariable(name, np.short, ('time', 'lat', 'lon', ))
-                    # empty variable
-                    # no metadata, no fill value, no long_name, etc
+                    
+                    #default fill value is fill value for first satellite encountered when reading files in
+                    if len(meta) > 0:
+                        ds.createVariable(name, np.short, ('time', 'lat', 'lon', ), fill_value = meta[0]["_FillValue"])
+                    else:
+                        ds.createVariable(name, np.short, ('time', 'lat', 'lon', ), fill_value = -9999)
                     
             else: #phy_var is NOT aod
                 name = nc_var_name(p_vars, s_name) #str(s_name+"_"+p_vars)
-                values.append(ds.createVariable(name, np.short, ('time', 'lat', 'lon', )))
+                if len(meta) > 0:
+                    values.append(ds.createVariable(name, np.short, ('time', 'lat', 'lon', ), fill_value = meta[0]["_FillValue"]))
+                else:
+                    values.append(ds.createVariable(name, np.short, ('time', 'lat', 'lon', ), fill_value = -9999))
+   
     # end instantiation of empty variables
     
     
