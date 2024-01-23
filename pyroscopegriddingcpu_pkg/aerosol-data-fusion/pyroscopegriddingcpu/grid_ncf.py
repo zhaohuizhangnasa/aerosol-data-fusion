@@ -220,8 +220,8 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
                 
                 # add manual metadata
                 if name == "Topographic_Altitude":
-                    ds[name].long_name = "Averaged topographic altitude (in km) for Land"
-                    ds[name].units = "km"
+                    ds[name].long_name = "Averaged topographic altitude (in meter) for Land"
+                    ds[name].units = "m"
                 else:
                     ds[name].long_name = "Land_Sea_Flag (based on MOD03 Landsea mask 0 = Ocean, 1 = Land and ephemeral water 2 = Coastal)"
                     
