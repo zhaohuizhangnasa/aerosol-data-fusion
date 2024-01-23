@@ -107,7 +107,7 @@ def nc_long_name(geophys_name, sensor_name, statistic = None, aod_long = None, f
                 if aod_long != None:
                     name = name + " " + aod_long
                 if curr_stat == "SensorWeighting":
-                    name = name + ", the default value is 1.0 if sensor is available and 0.0 if sensor is not available, the sensor dimension order is MODIS-T, MODIS-A, VIIRS-SNP, ABI-G16, ABI-G17, AHI-H08"
+                    name = name + ", the default value is 1.0 if sensor is available and 0.0 if sensor is not available, the sensor dimension order is MODIS-T, MODIS-A, VIIRS-SNPP, ABI-G16, ABI-G17, AHI-H08"
     return name
 
 # Returns Sensor by naming convention

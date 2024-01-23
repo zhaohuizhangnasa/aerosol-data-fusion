@@ -14,6 +14,8 @@ __status__ = "Production"
 import yaml
 import os
 from os import walk
+from glob import glob
+
 
 # must work for both Windows and Linux systems 
 # Windows: "C:\\..."
@@ -92,7 +94,7 @@ def read_config(yfile):
 
     return grid_settings, variables, file_io
 
-def read_directory_sat_data(path):
+def read_directory_sat_data_old(path):
     f = []
     filelist = []
     for (dirpath, dirnames, filenames) in walk(path):
@@ -105,6 +107,11 @@ def read_directory_sat_data(path):
         
     return filelist
 
+def read_directory_sat_data(path):
+    nclist = os.path.join(path,'**','*.nc')
+    filelist = glob(nclist,recursive=True)
+        
+    return filelist
 if __name__ == '__main__':
     path = "/mnt/c/Users/bobgr/Desktop/NASA Spring 2023/Gridtools Package (Code, README, inputs, outputs, examples, verification)/"
     folder = "LAADSemulation/"

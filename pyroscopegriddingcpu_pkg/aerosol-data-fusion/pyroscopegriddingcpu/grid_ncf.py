@@ -189,6 +189,7 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
     sensors = {}
 
     # instantiate empty arrays for summary statistics
+    meta = []
     indata_temp = []
     inlat_temp = []
     inlon_temp = []
@@ -546,13 +547,15 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
                 leogeo_calculated_statistics[leogeo_index][i][0, :, :] = stat_values
                 #print("MAX STAT VALUE for ", statistic, ":", stat_values.max())
                 leogeo_long = meta[leogeo_meta_index]["long_name"]
-                
-                if (("Filtered" in name) or ("filtered" in name)) and (statistic == "Mean"):
-                    leogeo_calculated_statistics[leogeo_index][i].long_name = nc_long_name(p_var, "LEOGEO", 
-                                                                                          statistic, None, True) + " for the grid. " + "It is average of individual sensor gridded AODs (i.e. AOD_FilteredQA_550_*_*_Mean)" #statistics_references_long
+                lfilter = True if ("filtered" in name.lower()) else False
+                lname = naming_conventions.nc_long_name(p_var, "LEOGEO",statistic,filtered=lfilter )
+
+                #if (("Filtered" in name) or ("filtered" in name)) and (statistic == "Mean"):
+                if statistic == "Mean":
+                    leogeo_calculated_statistics[leogeo_index][i].long_name = lname  + " for the grid. It is average of individual sensor gridded AODs (i.e. AOD_FilteredQA_550_*_*_Mean)" #statistics_references_long
                 else:
-                    leogeo_calculated_statistics[leogeo_index][i].long_name = nc_long_name(p_var, "LEOGEO", 
-                                                                                          statistic) + " for the grid"
+                    leogeo_calculated_statistics[leogeo_index][i].long_name = lname  + " for the grid"
+                
                 # metadata
                 leogeo_calculated_statistics[leogeo_index][i].units = "1"#"degree"#meta[leogeo_meta_index]["units"]
                 #print("LEOGEO STAT: ", meta[leogeo_meta_index])

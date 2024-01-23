@@ -65,6 +65,11 @@ def grid(limit,gsize,indata,inlat,inlon): #valid_range
             i=int(round((inlon[ii]-minlon)/dx))
             j=int(round((inlat[ii]-minlat)/dy))
 
+            if i >= xdim : i = xdim - 1 
+            if j >= ydim : j = ydim - 1
+            if i<0: i = 0 
+            if j< 0: j = 0
+
             # do not take nan values into account
             # nans should not be counted
             sumtau[i,j]=sumtau[i,j]+indata[ii]
@@ -83,20 +88,19 @@ def grid(limit,gsize,indata,inlat,inlon): #valid_range
             grdlat[i,j]=dy*j+minlat
             if count[i,j] > 0:
                 avgtau[i,j]=sumtau[i,j]/count[i,j]
-                #para1=(1/count[i,j])*(sqrtau[i,j])+(count[i,j])*avgtau[i,j]-2*(avgtau[i,j])*(sumtau[i,j])
+                if count[i,j] == 1:
+                    stdtau[i,j]= 0
                 if count[i,j] > 1:
-                    para1 = (sqrtau[i,j] - (sumtau[i,j]**2 / count[i,j]))
+                    #para1 = (sqrtau[i,j] - (sumtau[i,j]**2 / count[i,j]))
+                    para1 = (sqrtau[i,j] - (avgtau[i,j]**2 * count[i,j]))
                     para1 = para1 / (count[i,j] - 1)
-                
-                    if para1 > 0:
+                    if para1 >= 0:
                         stdtau[i,j]=np.sqrt(para1)
                         
     # change none to fill values
     mintau[mintau==5000.]=None
     maxtau[maxtau==-100.]=None
     avgtau[avgtau==-9999.]=None
-
-    return avgtau,stdtau,grdlat,grdlon,mintau,maxtau,count,sumtau
 
     return avgtau,stdtau,grdlat,grdlon,mintau,maxtau,count,sumtau
 
