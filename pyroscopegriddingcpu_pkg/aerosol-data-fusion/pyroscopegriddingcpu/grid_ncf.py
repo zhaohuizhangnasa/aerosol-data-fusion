@@ -548,7 +548,7 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
                 #print("MAX STAT VALUE for ", statistic, ":", stat_values.max())
                 leogeo_long = meta[leogeo_meta_index]["long_name"]
                 lfilter = True if ("filtered" in name.lower()) else False
-                lname = naming_conventions.nc_long_name(p_var, "LEOGEO",statistic,filtered=lfilter )
+                lname = nc_long_name(p_var, "LEOGEO",statistic,filtered=lfilter )
 
                 #if (("Filtered" in name) or ("filtered" in name)) and (statistic == "Mean"):
                 if statistic == "Mean":
