@@ -154,7 +154,7 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
     sensor_var = ds.createVariable("sensors", np.short, ('sensor', ))
     
     #sensors metadata
-    sensor_var.long_name = "Sensors: 1- MODIS-T, 2 - MODIS-A, 3 - VIIRS-SNP, 4 - ABI-G16, 5 - ABI-G17, 6 - AHI-H08"
+    sensor_var.long_name = "Sensors: 1- MODIS-T, 2 - MODIS-A, 3 - VIIRS-SNPP, 4 - ABI-G16, 5 - ABI-G17, 6 - AHI-H08"
     #sensor_var.units = "None"
     
     #latitude / longitude metadata
@@ -353,8 +353,12 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
             if not("Sensor_Zenith" in p_vars or "Scattering_Angle" in p_vars):#"Optical_Depth_Land_And_Ocean" in p_vars:
                 aod_statistics = ["Mean", "STD", "Pixels"]
                 avgtau,stdtau,grdlat,grdlon,mintau,maxtau,count,sumtau = grid(limit,float(gsize),indata_temp[j],inlat_temp[j],inlon_temp[j])
-                #concatenate AOD data for leogeo stats later
+                mintau[np.isnan(mintau)]=meta[j]["_FillValue"]
+                maxtau[np.isnan(maxtau)]=meta[j]["_FillValue"]
+                avgtau[np.isnan(avgtau)]=meta[j]["_FillValue"]
+                stdtau[np.isnan(stdtau)]=meta[j]["_FillValue"]
                 
+                #concatenate AOD data for leogeo stats later
                 for aod_stat in aod_statistics:
                     
                     index = len(values) #i * len(phy_list) + j
@@ -366,8 +370,6 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
                     values[index].units = "1" #meta[j]["units"]
                     values[index].valid_range = meta[j]["valid_range"]
                     values[index].long_name = nc_long_name(p_vars, s_name, aod_stat, aod_long) + " for the grid" #meta[j]["long_name"]
-                    #values[index].scale_factor = round(meta[j]["scale_factor"], 3)
-                    #values[index].add_offset = meta[j]["add_offset"]
                     values[index].Parameter_Type = meta[j]["Parameter_Type"]
                     
                     # check if pixels to add add_offset or scale_factor or not
@@ -378,9 +380,9 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
                     else:
                         # valid range for Pixel must be from 0
                         if pixel_range == None:
-                            values[index].valid_range = [0, 100]
+                            values[index].valid_range = [0, 5000]
                         else:
-                            values[index].valid_range = [0, 100]
+                            values[index].valid_range = [0, 5000]
 
                     
                     # instantiate the dictionary for statistics
@@ -408,7 +410,6 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
                         temp_a[temp_a > -9999] = 1
                         temp_a[temp_a <= meta[j]["_FillValue"]] = 0 #get rid of this 2/1
                         temp_a[np.isnan(temp_a)] = 0
-                        #sensor_idx[get_sensor(s_name)] = temp_a
                         sensor_idx_arr[p_vars][get_sensor(s_name)] = temp_a
                                            
                          
@@ -431,20 +432,14 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
                         #leogeo_stats["Mean"].append(np.flipud(rotated)) #for leogeo calculation later
                         print("STATISTIC ERROR")
                     
-                    #print(np.flipud(rotated))
                     
                     #manually set to fill_value
                     rotated = np.array(rotated)
-                    #rotated[rotated > meta[j]["valid_range"][1]+1] = -800#meta[j]["_FillValue"]
-                    #rotated[rotated < meta[j]["valid_range"][0]-1] = -800 #meta[j]["_FillValue"]
                     
                     final_input = np.flipud(rotated)#.astype(np.short)
                     final_input = final_input #/meta[j]["scale_factor"]
-                    #curr_sensor_value = values[index]
-                    #values[index][0, :, :] = values[index][0, :, :].astype(np.short)
                     values[index][0, :, :] = final_input 
                     values[index][0, :, :] = values[index][0, :, :].astype("f4")
-                    #values[index][0, :, :] = (values[index][0, :, :]*meta[j]["scale_factor"]).astype(np.short)
 
                     # AOD print
                    
@@ -537,14 +532,14 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
                                                                     leogeo_stats["Mean"],
                                                                     leogeo_stats["STD"],
                                                                     leogeo_stats["TotalPixels"], 
-                                                                    round(meta[leogeo_meta_index]["scale_factor"], 3))
+                                                                   )
                 else:
                     stat_values = calculate_statistic(statistic, 
                                                                     leogeo_stats["Mean"],
                                                                     leogeo_stats["STD"],
                                                                     leogeo_stats["TotalPixels"])
                 leogeo_calculated_statistics[leogeo_index].append(ds.createVariable(name, np.short, ('time', 'lat', 'lon', ), fill_value = -9999 )) #1/29/2023 - added fill value
-                leogeo_calculated_statistics[leogeo_index][i][0, :, :] = stat_values
+                #leogeo_calculated_statistics[leogeo_index][i][0, :, :] = stat_values
                 #print("MAX STAT VALUE for ", statistic, ":", stat_values.max())
                 leogeo_long = meta[leogeo_meta_index]["long_name"]
                 lfilter = True if ("filtered" in name.lower()) else False
@@ -565,7 +560,8 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
                     leogeo_calculated_statistics[leogeo_index][i].valid_range = meta[leogeo_meta_index]["valid_range"]
                 else:
                     #Total pixels does nott have scale_factor, add_offset
-                    leogeo_calculated_statistics[leogeo_index][i].valid_range = [0, 100]
+                    leogeo_calculated_statistics[leogeo_index][i].valid_range = [0, 5000]
+                leogeo_calculated_statistics[leogeo_index][i][0, :, :] = stat_values
                 i+=1
             
                 

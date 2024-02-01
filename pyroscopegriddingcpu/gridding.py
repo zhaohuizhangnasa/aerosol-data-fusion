@@ -52,10 +52,10 @@ def grid(limit,gsize,indata,inlat,inlon): #valid_range
     mintau=np.full([xdim,ydim],5000.0) # init 2d array map with defaults
     maxtau=np.full([xdim,ydim],-100.0) # fill value, do not change min max
     
-    avgtau=np.full([xdim,ydim],-9999.0) # write nans as fill values rather than nans
-    stdtau=np.full([xdim,ydim],-9999.0)
-    grdlat=np.full([xdim,ydim],-9999.0)
-    grdlon=np.full([xdim,ydim],-9999.0)
+    avgtau=np.full([xdim,ydim],np.nan) # write nans as fill values rather than nans
+    stdtau=np.full([xdim,ydim],np.nan)
+    grdlat=np.full([xdim,ydim],np.nan)
+    grdlon=np.full([xdim,ydim],np.nan)
 
     for ii in range(len(indata)):
         #check within bounds
@@ -97,10 +97,12 @@ def grid(limit,gsize,indata,inlat,inlon): #valid_range
                     if para1 >= 0:
                         stdtau[i,j]=np.sqrt(para1)
                         
+                else:
+                        sumtau[i,j]=np.nan
+
     # change none to fill values
-    mintau[mintau==5000.]=None
-    maxtau[maxtau==-100.]=None
-    avgtau[avgtau==-9999.]=None
+    mintau[mintau==5000.]=np.nan
+    maxtau[maxtau==-100.]=np.nan
 
     return avgtau,stdtau,grdlat,grdlon,mintau,maxtau,count,sumtau
 
