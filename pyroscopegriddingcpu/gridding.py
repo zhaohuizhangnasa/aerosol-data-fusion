@@ -49,8 +49,8 @@ def grid(limit,gsize,indata,inlat,inlon): #valid_range
     sqrtau=np.zeros((xdim,ydim))
     count=np.zeros((xdim,ydim))
     
-    mintau=np.full([xdim,ydim],5000.0) # init 2d array map with defaults
-    maxtau=np.full([xdim,ydim],-100.0) # fill value, do not change min max
+    mintau=np.full([xdim,ydim],np.inf) # init 2d array map with defaults
+    maxtau=np.full([xdim,ydim],-np.inf) # fill value, do not change min max
     
     avgtau=np.full([xdim,ydim],np.nan) # write nans as fill values rather than nans
     stdtau=np.full([xdim,ydim],np.nan)
@@ -60,7 +60,9 @@ def grid(limit,gsize,indata,inlat,inlon): #valid_range
     for ii in range(len(indata)):
         #check within bounds
         # indata should be filtered based on range (not 0, 5 but rather valid_range)
-        if (inlat[ii]>=minlat-dxx and inlat[ii] <= maxlat+dxx and inlon[ii]>= minlon-dxx and inlon[ii]<= maxlon+dxx): # and indata[ii] >0.0 and indata[ii]<=5.0):
+        if (inlat[ii]>=minlat-dxx and inlat[ii] <= maxlat+dxx and \
+            inlon[ii]>= minlon-dxx and inlon[ii]<= maxlon+dxx): # and indata[ii] >0.0 and indata[ii]<=5.0):
+
             # pixel coordinates for bounds
             i=int(round((inlon[ii]-minlon)/dx))
             j=int(round((inlat[ii]-minlat)/dy))
@@ -101,8 +103,8 @@ def grid(limit,gsize,indata,inlat,inlon): #valid_range
                         sumtau[i,j]=np.nan
 
     # change none to fill values
-    mintau[mintau==5000.]=np.nan
-    maxtau[maxtau==-100.]=np.nan
+    mintau[np.isinf(mintau)] = np.nan
+    maxtau[np.isinf(maxtau)] = np.nan
 
     return avgtau,stdtau,grdlat,grdlon,mintau,maxtau,count,sumtau
 
@@ -130,11 +132,6 @@ def multi_sensor_grid_data(filelist, phy_list, geo_list=['latitude', 'longitude'
 
         # valid data points
         lat,lon,phy_vars, metadata = filter_data_nc(GeoID, PhyID, geo_list, phy_list, phy_nc=phy_list, phy_hdf=phy_list)
-        
-        #append
-        #indata = np.concatenate(indata, np.ndarray(phy_vars[0]).flatten()).flatten()
-        #inlat = np.concatenate(inlat, np.ndarray(lat[0]).flatten()).flatten()
-        #inlon = np.concatenate(inlon, np.ndarray(lon[0]).flatten()).flatten()
         
         if len(indata) == 0:
             indata = phy_vars[0]

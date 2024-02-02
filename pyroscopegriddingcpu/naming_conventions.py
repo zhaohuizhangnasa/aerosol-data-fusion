@@ -121,35 +121,26 @@ def get_sensor(s_name):
 # statistic can be Mean, STD, TotalPixels
 # data = array of satellite data [[sat1 data], [sat2 data], etc]
 # order is always mean, std, count
-def calculate_statistic(statistic, data, data2 = None, data3 = None, fill_value = -9999):
+def calculate_statistic(statistic, data, fill_value = -9999):
     if statistic == "Mean":
         print("ENTERED MEAN CALCULATION")
         data = np.array(data)
-        #print(data.shape)
         data[data==fill_value] = np.nan # fill_value
-        
         avgtau = np.nanmean(data, axis=0 ) # [ [avgtau for modis a], [avgtau .. ]  ]
         avgtau = np.nan_to_num(avgtau, nan=fill_value) # fill_value
-        #avgtau = avgtau/scale_factor
+        avgtau[np.isnan(avgtau)] = fill_value
         return avgtau
-    
-    # https://stats.stackexchange.com/questions/55999/is-it-possible-to-find-the-combined-standard-deviation
+
     if statistic == "STD":
-        
         data = np.array(data)
         data[data==fill_value] = np.nan
-        #test
-        #print("MEANS: ", data.shape)
         print("ENTERED STD CALCULATIONS")
-        
         stdtau = np.nanstd(data, axis = 0)
-        stdtau = np.nan_to_num(stdtau, nan=fill_value) # fill_value
-        
+        stdtau[np.isnan(stdtau)] = fill_value
         return stdtau
         
-    
     if statistic == "TotalPixels":
-        count = np.sum(np.array(data3), axis=0 )
+        count = np.sum(np.array(data), axis=0 )
         return count
     
     return
