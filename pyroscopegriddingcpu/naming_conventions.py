@@ -121,74 +121,26 @@ def get_sensor(s_name):
 # statistic can be Mean, STD, TotalPixels
 # data = array of satellite data [[sat1 data], [sat2 data], etc]
 # order is always mean, std, count
-def calculate_statistic(statistic, data, data2 = None, data3 = None, scale_factor = 1):
+def calculate_statistic(statistic, data, fill_value = -9999):
     if statistic == "Mean":
-        """
-        data = np.array(data)
-        num_sensors = len(data)
-        lat_width = len(data[0])
-        lon_width = len(data[0][0])
-        data = data.flatten()
-        
-        data[data<=-9999.] = np.nan
-        data = data.reshape(num_sensors, lat_width, lon_width)
-        """
         print("ENTERED MEAN CALCULATION")
-        
         data = np.array(data)
-        print(data.shape)
-        data[data<=-9999.] = np.nan # fill_value
-        
+        data[data==fill_value] = np.nan # fill_value
         avgtau = np.nanmean(data, axis=0 ) # [ [avgtau for modis a], [avgtau .. ]  ]
-        avgtau = np.nan_to_num(avgtau, nan=-9999) # fill_value
-        #print(avgtau.flatten())
-        #print("ORIGINAL DATA2:", data)
-        
-        #avgtau = np.nanmean(np.array(data), axis=0 )
-        avgtau = avgtau/scale_factor
-        
-        avgtau[avgtau > 5001] = -9999
-        avgtau[avgtau < -101] = -9999
-           
+        avgtau = np.nan_to_num(avgtau, nan=fill_value) # fill_value
+        avgtau[np.isnan(avgtau)] = fill_value
         return avgtau
-    
-    # https://stats.stackexchange.com/questions/55999/is-it-possible-to-find-the-combined-standard-deviation
+
     if statistic == "STD":
-        
-        # [[std g16], [ g17], []]
-        """
-        mean = np.array(data)
-        count = np.array(data3)
-        variances = np.array(data2)**2
-        
-        y_bar = calculate_statistic("Mean", mean, None, count, scale_factor)
-        total_count = np.sum(count, axis=0 )
-        
-        numerator_sum = (count - 1) * variances + count * (mean - y_bar)**2
-        numerator = np.sum(numerator_sum, axis = 0)
-        
-        denominator = total_count - 1
-        denominator[denominator == 0] = None
-        
-        return np.sqrt(numerator / denominator)
-        """        
-        
         data = np.array(data)
-        data[data<=-9999.] = np.nan
-        #data[data==0] = np.nan
-        
-        #test
-        print(data)
-        print("MEANS: ", data.shape)
+        data[data==fill_value] = np.nan
         print("ENTERED STD CALCULATIONS")
-        
         stdtau = np.nanstd(data, axis = 0)
-        
+        stdtau[np.isnan(stdtau)] = fill_value
         return stdtau
         
-    
     if statistic == "TotalPixels":
-        count = np.sum(np.array(data3), axis=0 )
+        count = np.sum(np.array(data), axis=0 )
         return count
     
     return
