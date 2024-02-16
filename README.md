@@ -13,7 +13,12 @@ Required libraries:
 2. pyhdf (process HDF files)
 3. netCDF4 (process netCDF files)
 4. pyyaml (YAML user config)
+5. joblib (run pipeline jobs)
+6. pandas (python data analysis libs)
+7. numba (parallelizing codes with GPUs)
 
+check requirements.txt for the required versions or additional libraries. numba is not required for the cpu-only package.
+ 
 
 ## Inputs
 
