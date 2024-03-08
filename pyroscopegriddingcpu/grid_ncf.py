@@ -54,7 +54,7 @@ import datetime
 # full satellite list 
 # used to check if any satellites are missing
 #full_satellite_list = ['AERDT_L2_ABI_G16', 'AERDT_L2_ABI_G17', 'AERDT_L2_AHI_H08', 'AERDT_L2_VIIRS_SNPP', 'MOD04_L2', 'MYD04_L2']
-full_satellite_list = ['ABI_G16', 'ABI_G17', 'AHI_H08', 'VIIRS_SNPP', 'MOD04', 'MYD04']
+full_satellite_list = ['ABI_G16', 'ABI_G17', 'AHI_H08','AHI_H09', 'VIIRS_SNPP', "VIIRS_NOAA20",'MOD04', 'MYD04']
 
 
 # takes in dictionary 
@@ -103,7 +103,7 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
     ds.title = "Level 3 gridded merged aerosol data from Dark Target Algorithm for MEASURES Project (2017-2023)"
     ds.history = "TBD" #fill it in later
     ds.institution = "NASA Goddard Space Flight Center, Climate and Radiation Laboratory"
-    ds.source = "MODIS-Terra, MODIS-Aqua, VIIRS-SNPP, ABI-G16, ABI-G17, AHI-Himawari-08"
+    ds.source = "MODIS-Terra, MODIS-Aqua, VIIRS-SNPP, VIIRS-NOAA20, ABI-G16, ABI-G17, AHI-Himawari-08, AHI-Himawari-09"
     ds.references = "1) Levy, R. C., S. Mattoo, L. A. Munchak, et al. 2013. The Collection 6 MODIS Aerosol Products over Land and Ocean. Atmos Meas Tech 6 2989-3034 [10.5194/amt-6-2989-2013]; 2) Gupta, P.; Remer, L.A.; Patadia, F.; Levy, R.C.; Christopher, S.A. High-Resolution Gridded Level 3 Aerosol Optical Depth Data from MODIS. Remote Sens. 2020, 12, 2847. https://doi.org/10.3390/rs12172847"
     ds.Conventions = "CF-1.8"
     ds.LongName = "Level 3 quarter degree gridded global aerosol data from six LEO and GEO sensors averaged for a 30 minute interval."
@@ -154,7 +154,7 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
     sensor_var = ds.createVariable("sensors", np.short, ('sensor', ))
     
     #sensors metadata
-    sensor_var.long_name = "Sensors: 1- MODIS-T, 2 - MODIS-A, 3 - VIIRS-SNPP, 4 - ABI-G16, 5 - ABI-G17, 6 - AHI-H08"
+    sensor_var.long_name = "Sensors: 1- MODIS-T, 2 - MODIS-A, 3 - VIIRS-SNPP, 4 - VIIRS-NOAA20, 5 - ABI-G16, 6 - ABI-G17, 7 - AHI-H08, 8 - AHI-H09"
     #sensor_var.units = "None"
     
     #latitude / longitude metadata
@@ -535,7 +535,7 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
                 i+=1
             
             
-            sensor_order = ["MODIS_T", "MODIS_A", "VIIRS_SNPP", "ABI_G16", "ABI_G17", "AHI_H08"]
+            sensor_order = ["MODIS_T", "MODIS_A", "VIIRS_SNPP", "ABI_G16", "ABI_G17", "AHI_H08", "VIIRS_NOAA20","AHI_H09"]
             name = nc_var_name(p_var,"LEOGEO", "SensorWeighting")
             sensor_idx_variable.append(ds.createVariable(name, np.short, 
                             ('sensor', 'lat', 'lon', ), fill_value=-9999.))

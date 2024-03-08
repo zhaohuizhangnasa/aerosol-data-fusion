@@ -16,8 +16,10 @@ import netCDF4
 import numpy as np
 
 # for variable name
-sensor_references = { "MYD":"MODIS_A", "MOD":"MODIS_T", "ABI_G16":"ABI_G16", 
-                     "ABI_G17":"ABI_G17", "VIIRS_SNPP":"VIIRS_SNPP", "AHI_H08":"AHI_H08",
+sensor_references = { "MYD":"MODIS_A", "MOD":"MODIS_T", 
+        "ABI_G16":"ABI_G16", "ABI_G17":"ABI_G17", 
+        "AHI_H08":"AHI_H08","AHI_H09":"AHI_H09",
+        "VIIRS_SNPP":"VIIRS_SNPP", "VIIRS_NOAA20":"VIIRS_NOAA20",
                      "LEOGEO":"LEOGEO"}
 
 geophys_references = { "Sensor_Zenith", "Scattering_Angle", "AOD_AllQA_550", "AOD_FilteredQA_550"}
@@ -25,7 +27,7 @@ geophys_references = { "Sensor_Zenith", "Scattering_Angle", "AOD_AllQA_550", "AO
 # for long_name
 sensor_references_long = { "MYD":"MODIS Aqua", "MOD":"MODIS Terra", "ABI_G16":"ABI GOES-16 (GOES-R or GOES-East)", 
                      "ABI_G17":"ABI GOES-17 (GOES-S or GOES-West)", "VIIRS_SNPP":"SNPP VIIRS",
-                     "AHI_H08":"AHI Himawari-8",
+                     "AHI_H08":"AHI Himawari-8", "AHI_H09":"AHI Himawari-9","VIIRS_NOAA20":"NOAA-20 VIIRS",
                      "LEOGEO":"LEO GEO"}
 
 geophys_references_long = { "Sensor_Zenith":"Sensor Viewing Angle", 
@@ -107,7 +109,7 @@ def nc_long_name(geophys_name, sensor_name, statistic = None, aod_long = None, f
                 if aod_long != None:
                     name = name + " " + aod_long
                 if curr_stat == "SensorWeighting":
-                    name = name + ", the default value is 1.0 if sensor is available and 0.0 if sensor is not available, the sensor dimension order is MODIS-T, MODIS-A, VIIRS-SNPP, ABI-G16, ABI-G17, AHI-H08"
+                    name = name + ", the default value is 1.0 if sensor is available and 0.0 if sensor is not available, the sensor dimension order is MODIS-T, MODIS-A, VIIRS-SNPP, VIIRS-NOAA20, ABI-G16, ABI-G17, AHI-H08 or AHI-H09"
     return name
 
 # Returns Sensor by naming convention
