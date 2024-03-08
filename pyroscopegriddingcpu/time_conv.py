@@ -18,7 +18,7 @@ import datetime
 #from fileparser import *
 from pyroscopegriddingcpu.fileparser import *
 
-full_satellite_list = ['ABI_G16', 'ABI_G17', 'AHI_H08', 'VIIRS_SNPP', 'MOD04', 'MODIS_T', 'MODIS_A', 'MYD04']
+full_satellite_list = ['ABI_G16', 'ABI_G17', 'AHI_H08', 'AHI_H09','VIIRS_SNPP', 'VIIRS_NOAA20','MOD04', 'MODIS_T', 'MODIS_A', 'MYD04']
 
 # given 'yyyy/mm/dd/hr/mm' string
 # converts to datetime object
