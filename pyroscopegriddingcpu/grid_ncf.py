@@ -54,7 +54,7 @@ import datetime
 # full satellite list 
 # used to check if any satellites are missing
 #full_satellite_list = ['AERDT_L2_ABI_G16', 'AERDT_L2_ABI_G17', 'AERDT_L2_AHI_H08', 'AERDT_L2_VIIRS_SNPP', 'MOD04_L2', 'MYD04_L2']
-full_satellite_list = ['ABI_G16', 'ABI_G17', 'AHI_H08','AHI_H09', 'VIIRS_SNPP', "VIIRS_NOAA20",'MOD04', 'MYD04']
+full_satellite_list = ['ABI_G16', 'ABI_G17', 'AHI_H08', 'AHI_H09','VIIRS_NOAA20','VIIRS_SNPP', 'MOD04', 'MYD04']
 
 
 # takes in dictionary 
@@ -103,7 +103,7 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
     ds.title = "Level 3 gridded merged aerosol data from Dark Target Algorithm for MEASURES Project (2017-2023)"
     ds.history = "TBD" #fill it in later
     ds.institution = "NASA Goddard Space Flight Center, Climate and Radiation Laboratory"
-    ds.source = "MODIS-Terra, MODIS-Aqua, VIIRS-SNPP, VIIRS-NOAA20, ABI-G16, ABI-G17, AHI-Himawari-08, AHI-Himawari-09"
+    ds.source = "MODIS-Terra, MODIS-Aqua, VIIRS-SNPP,VIIRS-NOAA20, ABI-G16, ABI-G17, AHI-Himawari-08,AHI-Himawari-09"
     ds.references = "1) Levy, R. C., S. Mattoo, L. A. Munchak, et al. 2013. The Collection 6 MODIS Aerosol Products over Land and Ocean. Atmos Meas Tech 6 2989-3034 [10.5194/amt-6-2989-2013]; 2) Gupta, P.; Remer, L.A.; Patadia, F.; Levy, R.C.; Christopher, S.A. High-Resolution Gridded Level 3 Aerosol Optical Depth Data from MODIS. Remote Sens. 2020, 12, 2847. https://doi.org/10.3390/rs12172847"
     ds.Conventions = "CF-1.8"
     ds.LongName = "Level 3 quarter degree gridded global aerosol data from six LEO and GEO sensors averaged for a 30 minute interval."
@@ -231,7 +231,7 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
     name = "Solar_Zenith_Angle"
     solar_zenith_variable = ds.createVariable(name, 'f4', ('time', 'lat', 'lon', ), fill_value=int(-9999))
     solar_zenith_variable.long_name = "Solar Zenith Angle at the center of grid calculated for central time of the file"
-    solar_zenith_variable.units = "degree"
+    solar_zenith_variable.units = "degrees"
     solar_zenith_variable.valid_range = [ 0, 18000]
     solar_zenith_variable.scale_factor = 0.01
     solar_zenith_variable.add_offset = float(0)
@@ -258,7 +258,9 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
                 present_satellites.append(s)
                 
     not_present_satellites = [s for s in full_satellite_list if s not in present_satellites]
-    
+   
+    # metadata for not_present_satellites
+
     for s_name in not_present_satellites: # not present satellites
         for j, p_vars in enumerate(phy_list): # creating a variable for each geophysical variable 
             if not("Sensor_Zenith" in p_vars or "Scattering_Angle" in p_vars):
@@ -271,14 +273,52 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
                     if len(meta) > 0:
                         ds.createVariable(name, np.short, ('time', 'lat', 'lon', ), fill_value = meta[0]["_FillValue"])
                     else:
-                        ds.createVariable(name, np.short, ('time', 'lat', 'lon', ), fill_value = -9999)
-                    
+                        #ds.createVariable(name, np.short, ('time', 'lat', 'lon', ), fill_value = -9999)
+                        name=ds.createVariable(name, np.short, ('time', 'lat', 'lon', ), fill_value = -9999)
+
+                        name.units = "None"
+                        for_longname = nc_long_name(p_vars, s_name, aod_stat, aod_long=None)
+
+                        if not(aod_stat in "Pixels") or not("Pixels" in aod_stat):
+                            name.valid_range = [-100, 5000]
+
+                            if (p_vars == 'Optical_Depth_Land_And_Ocean'):
+                                longname = for_longname + (" AOT at 0.55 micron for both ocean (Average) (Quality flag = 1, 2, 3) and land (corrected) (Quality flag = 3) for the grid")
+                            else:
+                                longname = for_longname + (" AOT at 0.55 micron for both ocean (Average) and land (corrected) with all quality data (Quality flag = 0, 1, 2, 3) for the grid")
+
+                            name.long_name = longname
+                            name.scale_factor = 0.001
+                            name.add_offset = 0.0
+
+                        else:
+                            name.valid_range = [0, 5000]
+                            # valid range for Pixel must be from 0
+                            #if pixel_range == None:
+                            if (p_vars == 'Optical_Depth_Land_And_Ocean'):
+                                name.long_name =for_longname + (" AOT at 0.55 micron for both ocean (Average) (Quality flag = 1, 2, 3) and land (corrected) (Quality flag = 3) for the grid")
+                            else:
+                                name.long_name=for_longname + (" AOT at 0.55 micron for both ocean (Average) and land (corrected) with all quality data (Quality flag = 0, 1, 2, 3) for the grid")
+
+                        name.Parameter_Type = "Output"
+
             else: #phy_var is NOT aod
                 name = nc_var_name(p_vars, s_name) #str(s_name+"_"+p_vars)
                 if len(meta) > 0:
                     values.append(ds.createVariable(name, np.short, ('time', 'lat', 'lon', ), fill_value = meta[0]["_FillValue"]))
                 else:
-                    values.append(ds.createVariable(name, np.short, ('time', 'lat', 'lon', ), fill_value = -9999))
+                    #values.append(ds.createVariable(name, np.short, ('time', 'lat', 'lon', ), fill_value = -9999))
+                    name=ds.createVariable(name, np.short, ('time', 'lat', 'lon', ), fill_value = -9999)
+
+                    name.units = "degrees" #meta[j]["units"]
+                    name.valid_range = [0, 18000]
+                    name.long_name = nc_long_name(p_vars, s_name)
+                    name.scale_factor = 0.01
+                    name.add_offset = 0.0
+                    if ("Sensor_Zenith" in p_vars):
+                        name.Parameter_Type = s_name + " Input"
+                    if ("Scattering_Angle" in p_vars):
+                        name.Parameter_Type = "Output"                    
    
     #run through and assign gridded data to sensor variable
     # filenames are in the form:
@@ -344,7 +384,7 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
                     values.append(ds.createVariable(name, np.short, ('time', 'lat', 'lon', ), fill_value=meta[j]["_FillValue"]))
                     
                     # metadata
-                    values[index].units = "1" #meta[j]["units"]
+                    values[index].units = "None" #meta[j]["units"]
                     values[index].valid_range = meta[j]["valid_range"]
                     values[index].long_name = nc_long_name(p_vars, s_name, aod_stat, aod_long) + " for the grid" #meta[j]["long_name"]
                     values[index].Parameter_Type = meta[j]["Parameter_Type"]
@@ -436,7 +476,7 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
                 values.append(ds.createVariable(name, np.short, ('time', 'lat', 'lon', ), fill_value=meta[j]["_FillValue"]))
                 
                 # metadata
-                values[index].units = "degree"#meta[j]["units"]
+                values[index].units = "degrees"#meta[j]["units"]
                 values[index].valid_range = meta[j]["valid_range"]
                 values[index].long_name = nc_long_name(p_vars, s_name)#meta[j]["long_name"]
                 values[index].scale_factor = round(meta[j]["scale_factor"], 3)
@@ -522,7 +562,7 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
                     leogeo_calculated_statistics[leogeo_index][i].long_name = lname  + " for the grid"
                 
                 # metadata
-                leogeo_calculated_statistics[leogeo_index][i].units = "1"  #"degree"#meta[leogeo_meta_index]["units"]
+                leogeo_calculated_statistics[leogeo_index][i].units = "None"  #"degree"#meta[leogeo_meta_index]["units"]
                 #print("LEOGEO STAT: ", meta[leogeo_meta_index])
                 if not("Pixels" in statistic) or not("TotalPixels" in statistic):
                     leogeo_calculated_statistics[leogeo_index][i].scale_factor = round(meta[leogeo_meta_index]["scale_factor"], 3)
@@ -535,13 +575,13 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
                 i+=1
             
             
-            sensor_order = ["MODIS_T", "MODIS_A", "VIIRS_SNPP", "ABI_G16", "ABI_G17", "AHI_H08", "VIIRS_NOAA20","AHI_H09"]
+            sensor_order = ["MODIS_T", "MODIS_A", "VIIRS_SNPP","VIIRS_NOAA20", "ABI_G16", "ABI_G17", "AHI_H08","AHI_H09"]
             name = nc_var_name(p_var,"LEOGEO", "SensorWeighting")
             sensor_idx_variable.append(ds.createVariable(name, np.short, 
                             ('sensor', 'lat', 'lon', ), fill_value=-9999.))
             sensor_idx_variable[leogeo_index].long_name = nc_long_name(p_var, "LEOGEO",
                             "SensorWeighting", meta[j]["long_name"]) + " for the grid"
-            sensor_idx_variable[leogeo_index].units = "1"
+            sensor_idx_variable[leogeo_index].units = "None"
             number_of_sensors = []
             
             i = 0
@@ -567,7 +607,7 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
             number_of_sensors_variable[leogeo_index][0, :, :] = number_of_sensors
             number_of_sensors_variable[leogeo_index].long_name = nc_long_name(p_var, "LEOGEO",
                                      "NumberOfSensors", meta[j]["long_name"])  + " for the grid"
-            number_of_sensors_variable[leogeo_index].units = "1"
+            number_of_sensors_variable[leogeo_index].units = "None"
             
             leogeo_index+=1    
         j += 1

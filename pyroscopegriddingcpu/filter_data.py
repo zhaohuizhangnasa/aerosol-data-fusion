@@ -82,7 +82,7 @@ def filter_data_nc(GeoID,PhyID,geo_list,phy_list, phy_nc = None):
         metadata.append(m)
 
     # scale factors
-    phy_vars = np.array(phy_vars) #* float(phy['scale_factor'][0]) + float(phy['add_offset'][0])
+    #phy_vars = np.array(phy_vars) #* float(phy['scale_factor'][0]) + float(phy['add_offset'][0])
     #phy_vars = (np.array(phy_vars) - float(phy['add_offset'][0]) )/float(phy['scale_factor'][0])
     for p in phy_vars:
         pass
