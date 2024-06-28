@@ -16,7 +16,7 @@ import netCDF4
 import numpy as np
 
 # for variable name
-sensor_references = { "MYD":"MODIS_A", "MOD":"MODIS_T", 
+sensor_references = { "MYD":"MODIS_Aqua", "MOD":"MODIS_Terra", 
         "ABI_G16":"ABI_G16", "ABI_G17":"ABI_G17", 
         "AHI_H08":"AHI_H08","AHI_H09":"AHI_H09",
         "VIIRS_SNPP":"VIIRS_SNPP", "VIIRS_NOAA20":"VIIRS_NOAA20",
@@ -109,7 +109,7 @@ def nc_long_name(geophys_name, sensor_name, statistic = None, aod_long = None, f
                 if aod_long != None:
                     name = name + " " + aod_long
                 if curr_stat == "SensorWeighting":
-                    name = name + ", the default value is 1.0 if sensor is available and 0.0 if sensor is not available, the sensor dimension order is MODIS-T, MODIS-A, VIIRS-SNPP, VIIRS-NOAA20, ABI-G16, ABI-G17, AHI-H08 or AHI-H09"
+                    name = name + ", the default value is 1.0 if sensor is available and 0.0 if sensor is not available, the sensor dimension order is MODIS-Terra, MODIS-Aqua, VIIRS-SNPP, VIIRS-NOAA20, ABI-G16, ABI-G17, AHI-H08 or AHI-H09"
     return name
 
 # Returns Sensor by naming convention

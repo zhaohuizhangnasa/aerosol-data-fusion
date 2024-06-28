@@ -54,7 +54,8 @@ import datetime
 # full satellite list 
 # used to check if any satellites are missing
 #full_satellite_list = ['AERDT_L2_ABI_G16', 'AERDT_L2_ABI_G17', 'AERDT_L2_AHI_H08', 'AERDT_L2_VIIRS_SNPP', 'MOD04_L2', 'MYD04_L2']
-full_satellite_list = ['ABI_G16', 'ABI_G17', 'AHI_H08', 'AHI_H09','VIIRS_NOAA20','VIIRS_SNPP', 'MOD04', 'MYD04']
+#full_satellite_list = ['ABI_G16', 'ABI_G17', 'AHI_H08', 'AHI_H09','VIIRS_NOAA20','VIIRS_SNPP', 'MOD04', 'MYD04']
+full_satellite_list = ['ABI_G16', 'ABI_G17', 'AHI_H08', 'VIIRS_SNPP', 'MOD04', 'MYD04']
 
 
 # takes in dictionary 
@@ -154,7 +155,7 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
     sensor_var = ds.createVariable("sensors", np.short, ('sensor', ))
     
     #sensors metadata
-    sensor_var.long_name = "Sensors: 1- MODIS-T, 2 - MODIS-A, 3 - VIIRS-SNPP, 4 - VIIRS-NOAA20, 5 - ABI-G16, 6 - ABI-G17, 7 - AHI-H08, 8 - AHI-H09"
+    sensor_var.long_name = "Sensors: 1- MODIS-Terra, 2 - MODIS-Aqua, 3 - VIIRS-SNPP, 4 - VIIRS-NOAA20, 5 - ABI-G16, 6 - ABI-G17, 7 - AHI-H08, 8 - AHI-H09"
     #sensor_var.units = "None"
     
     #latitude / longitude metadata
@@ -258,7 +259,8 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
                 present_satellites.append(s)
                 
     not_present_satellites = [s for s in full_satellite_list if s not in present_satellites]
-   
+    print("ggg",present_satellites) 
+    print(not_present_satellites) 
     # metadata for not_present_satellites
 
     for s_name in not_present_satellites: # not present satellites
@@ -575,7 +577,7 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
                 i+=1
             
             
-            sensor_order = ["MODIS_T", "MODIS_A", "VIIRS_SNPP","VIIRS_NOAA20", "ABI_G16", "ABI_G17", "AHI_H08","AHI_H09"]
+            sensor_order = ["MODIS_Terra", "MODIS_Aqua", "VIIRS_SNPP","VIIRS_NOAA20", "ABI_G16", "ABI_G17", "AHI_H08","AHI_H09"]
             name = nc_var_name(p_var,"LEOGEO", "SensorWeighting")
             sensor_idx_variable.append(ds.createVariable(name, np.short, 
                             ('sensor', 'lat', 'lon', ), fill_value=-9999.))
