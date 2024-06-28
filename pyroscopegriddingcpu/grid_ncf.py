@@ -54,8 +54,8 @@ import datetime
 # full satellite list 
 # used to check if any satellites are missing
 #full_satellite_list = ['AERDT_L2_ABI_G16', 'AERDT_L2_ABI_G17', 'AERDT_L2_AHI_H08', 'AERDT_L2_VIIRS_SNPP', 'MOD04_L2', 'MYD04_L2']
-#full_satellite_list = ['ABI_G16', 'ABI_G17', 'AHI_H08', 'AHI_H09','VIIRS_NOAA20','VIIRS_SNPP', 'MOD04', 'MYD04']
-full_satellite_list = ['ABI_G16', 'ABI_G17', 'AHI_H08', 'VIIRS_SNPP', 'MOD04', 'MYD04']
+#full_satellite_list = ['ABI_G16', 'ABI_G17', 'AHI_H08', 'VIIRS_SNPP', 'MOD04', 'MYD04']
+full_satellite_list = ['ABI_G16', 'ABI_G17', 'AHI_H08', 'AHI_H09','VIIRS_NOAA20','VIIRS_SNPP', 'MOD04', 'MYD04']
 
 
 # takes in dictionary 
@@ -138,7 +138,7 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
     timed = ds.createDimension('time', None)
     lat = ds.createDimension('lat', lat_dim) #latitude is fatitude (y)
     lon = ds.createDimension('lon', lon_dim) # x
-    sensor = ds.createDimension('sensor', 6) #only used for SensorWeighting mask
+    sensor = ds.createDimension('sensor', len(full_satellite_list)) #only used for SensorWeighting mask
     
     #set time variable to filename parse
     times = ds.createVariable('time', 'f4', ('time',)) #
