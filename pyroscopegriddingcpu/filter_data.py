@@ -116,7 +116,7 @@ def filter_data_hdf(GeoID,PhyID,geo_list,phy_list, phy_hdf = None):
         lon.append(lon1)
         
         phy_vars1 = np.array(phy_vars1) * float(phy['scale_factor'][p]) + float(phy['add_offset'][p])
-        #phy_vars.append(phy_vars1)
+        phy_vars.append(phy_vars1)
 
         #print("phyvars1: ", len(phy_vars1))
         
@@ -136,7 +136,7 @@ def filter_data_hdf(GeoID,PhyID,geo_list,phy_list, phy_hdf = None):
         metadata.append(m)
 
     # scale factors
-    phy_vars = np.array(phy_vars)
+    #phy_vars = np.array(phy_vars)
     for p in phy_vars:
         pass
         #print("FINAL MAXES HDF:", p.max())
