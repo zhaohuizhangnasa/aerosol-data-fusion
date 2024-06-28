@@ -108,9 +108,12 @@ def read_directory_sat_data_old(path):
     return filelist
 
 def read_directory_sat_data(path):
-    nclist = os.path.join(path,'**','*.nc')
-    filelist = glob(nclist,recursive=True)
-        
+    suffixes = ["nc","hdf"]
+    filelist=[]
+    for i in suffixes:
+      nclist = os.path.join(path,'**','*.'+i)
+      filelist.extend( glob(nclist,recursive=True))
+    print(filelist)
     return filelist
 if __name__ == '__main__':
     path = "/mnt/c/Users/bobgr/Desktop/NASA Spring 2023/Gridtools Package (Code, README, inputs, outputs, examples, verification)/"
