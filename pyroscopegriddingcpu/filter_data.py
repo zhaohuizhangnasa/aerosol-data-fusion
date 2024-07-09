@@ -42,13 +42,13 @@ def filter_data_nc(GeoID,PhyID,geo_list,phy_list, phy_nc = None):
     m = ma.getmaskarray(lat1)
     m = m | ma.getmaskarray(lon1)
     for p in range(len(phy_list)):
-        phy_vars1 = phy['data'][p][:,:]
-        m = m | ma.getmaskarray(phy_vars1)
-    for p in range(len(phy_list)):
         lon.append(lon1[~m])
         lat.append(lat1[~m])
         phy_vars1 = phy['data'][p][:,:]
-        phy_vars.append(phy_vars1[~m])    
+        m1 = ma.getmaskarray(phy_vars1)
+        # to combine valid lat-lon with valid phy_var
+        # m1 = m | ma.getmaskarray(phy_vars1)
+        phy_vars.append(phy_vars1[~m1])    
 
         # metadata attributes
         meta = {}
