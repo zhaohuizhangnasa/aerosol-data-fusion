@@ -557,10 +557,13 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
                 leogeo_long = meta[leogeo_meta_index]["long_name"]
                 lfilter = True if ("filtered" in name.lower()) else False
                 lname = nc_long_name(p_var, "LEOGEO",statistic,filtered=lfilter )
+                affix='AOD_AllQA_550_*_*_Mean'
+                if lfilter: affix='AOD_FilteredQA_550_*_*_Mean'
 
                 if statistic == "Mean":
                     leogeo_calculated_statistics[leogeo_index][i].long_name = lname  + \
-                    " for the grid. It is average of individual sensor gridded AODs (i.e. AOD_FilteredQA_550_*_*_Mean)"
+                    " for the grid. It is the average of individual sensor gridded AODs, i.e., the average of all "+affix+\
+                    "  where *_* stands for individual sensors."
                 else:
                     leogeo_calculated_statistics[leogeo_index][i].long_name = lname  + " for the grid"
                 
