@@ -101,17 +101,17 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
     
     
     #set global attributes
-    ds.title = "Level 3 gridded merged aerosol data from Dark Target Algorithm for MEASURES Project (2017-2023)"
-    ds.history = "TBD" #fill it in later
+    ds.title = "Level 3 gridded merged aerosol data from Dark Target Algorithm for MEASURES Project "
+    ds.history = "pyroscopegriddingcpu version 1.3.1.x" 
     ds.institution = "NASA Goddard Space Flight Center, Climate and Radiation Laboratory"
     ds.source = "MODIS-Terra, MODIS-Aqua, VIIRS-SNPP,VIIRS-NOAA20, ABI-G16, ABI-G17, AHI-Himawari-08,AHI-Himawari-09"
     ds.references = "1) Levy, R. C., S. Mattoo, L. A. Munchak, et al. 2013. The Collection 6 MODIS Aerosol Products over Land and Ocean. Atmos Meas Tech 6 2989-3034 [10.5194/amt-6-2989-2013]; 2) Gupta, P.; Remer, L.A.; Patadia, F.; Levy, R.C.; Christopher, S.A. High-Resolution Gridded Level 3 Aerosol Optical Depth Data from MODIS. Remote Sens. 2020, 12, 2847. https://doi.org/10.3390/rs12172847"
     ds.Conventions = "CF-1.8"
-    ds.LongName = "Level 3 quarter degree gridded global aerosol data from six LEO and GEO sensors averaged for a 30 minute interval."
+    ds.LongName = "Level 3 quarter degree gridded global aerosol data from LEO and GEO sensors averaged for a 30 minute interval."
     ds.VersionID = "V0"
     ds.Format = "NetCDF-4"
-    ds.DataSetQuality = "TBD" #fill it in later
-    ds.IdentifierProductDOI = "TBD" #add this attribute later when the data DOI is reserved
+    ds.DataSetQuality = "" #fill it in later
+    ds.IdentifierProductDOI = "" #add this attribute later when the data DOI is reserved
     ds.RangeBeginningDate = time_date
     ds.RangeBeginningTime = time_time
     ds.RangeEndingDate = time_end_date
