@@ -133,7 +133,7 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
     
     #list of all files used in creation of this output
     #ds.SatelliteInputFiles = sat_list_name_concat(filelist)
-    ds.InputPointer = sat_list_name_concat(filelist)
+    ds.InputPointer = ','.join(sat_list_name_concat(filelist))
     
     # Create time, lat, lon, sensor dimensions
     timed = ds.createDimension('time', None)
