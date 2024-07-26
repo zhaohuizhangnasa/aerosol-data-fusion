@@ -117,7 +117,7 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
     ds.RangeEndingDate = time_end_date
     ds.RangeEndingTime = time_end_time
     ds.ProcessingLevel = "Level 3"
-    ds.ShortName = "AERDT_L3_MEASURES_QD_HH"
+    ds.ShortName = "XAERDT_L3_MEASURES_QD_HH"
     
     filename = convert_path_to_linux(filename) #convert to linux pwd
     cut_index = filename.rindex("/")
