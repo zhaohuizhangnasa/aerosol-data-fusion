@@ -107,29 +107,30 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
     ds.source = "MODIS-Terra, MODIS-Aqua, VIIRS-SNPP,VIIRS-NOAA20, ABI-G16, ABI-G17, AHI-Himawari-08,AHI-Himawari-09"
     ds.references = "1) Levy, R. C., S. Mattoo, L. A. Munchak, et al. 2013. The Collection 6 MODIS Aerosol Products over Land and Ocean. Atmos Meas Tech 6 2989-3034 [10.5194/amt-6-2989-2013]; 2) Gupta, P.; Remer, L.A.; Patadia, F.; Levy, R.C.; Christopher, S.A. High-Resolution Gridded Level 3 Aerosol Optical Depth Data from MODIS. Remote Sens. 2020, 12, 2847. https://doi.org/10.3390/rs12172847"
     ds.Conventions = "CF-1.8"
-    ds.LongName = "Level 3 quarter degree gridded global aerosol data from LEO and GEO sensors averaged for a 30 minute interval."
+    #ds.LongName = "Level 3 quarter degree gridded global aerosol data from LEO and GEO sensors averaged for a 30 minute interval."
+    ds.LongName = "VAGHT Combined GEOLEO Aerosol 30-Min average L3 Global 0.25x0.25 degree grid"
     ds.VersionID = "V0"
     ds.Format = "NetCDF-4"
     ds.DataSetQuality = "" #fill it in later
-    ds.IdentifierProductDOI = "" #add this attribute later when the data DOI is reserved
-    ds.RangeBeginningDate = time_date
-    ds.RangeBeginningTime = time_time
-    ds.RangeEndingDate = time_end_date
-    ds.RangeEndingTime = time_end_time
+    #ds.IdentifierProductDOI = "" #add this attribute later when the data DOI is reserved
+    #ds.RangeBeginningDate = time_date
+    #ds.RangeBeginningTime = time_time
+    #ds.RangeEndingDate = time_end_date
+    #ds.RangeEndingTime = time_end_time
     ds.ProcessingLevel = "Level 3"
     ds.ShortName = "XAERDT_L3_MEASURES_QD_HH"
     
     filename = convert_path_to_linux(filename) #convert to linux pwd
     cut_index = filename.rindex("/")
     filename_without_path = filename[cut_index+1 :]
-    ds.GranuleID = filename_without_path
+    #ds.GranuleID = filename_without_path
     
     production_yyyymmdd = filename_without_path[-11:-3]
     currtime = datetime.datetime.now()
     production_hhmmss = currtime.strftime("%H%M%S")
-    ds.ProductionDateTime = production_yyyymmdd +":"+ production_hhmmss
+    #ds.ProductionDateTime = production_yyyymmdd +":"+ production_hhmmss
     
-    ds.IdentifierProductDOIAuthority  = "https://dx.doi.org/"
+    #ds.IdentifierProductDOIAuthority  = "https://dx.doi.org/"
     
     #list of all files used in creation of this output
     #ds.SatelliteInputFiles = sat_list_name_concat(filelist)
