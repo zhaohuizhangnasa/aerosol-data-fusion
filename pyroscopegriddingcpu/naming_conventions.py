@@ -29,6 +29,8 @@ sensor_references_long = { "MYD":"MODIS Aqua", "MOD":"MODIS Terra", "ABI_G16":"A
                      "ABI_G17":"ABI GOES-17 (GOES-West)", "VIIRS_SNPP":"SNPP VIIRS",
                      "AHI_H08":"AHI Himawari-8", "AHI_H09":"AHI Himawari-9","VIIRS_NOAA20":"NOAA-20 VIIRS",
                      "LEOGEO":"LEO GEO"}
+#sensor_references_long = { "MYD":"MODIS Aqua", "MOD":"MODIS Terra", "ABI_G16":"ABI GOES-16 (GOES-R or GOES-East)", 
+#                     "ABI_G17":"ABI GOES-17 (GOES-S or GOES-West)", "VIIRS_SNPP":"SNPP VIIRS",
 
 geophys_references_long = { "Sensor_Zenith":"Sensor Viewing Angle", 
                       "Scattering_Angle":"", 
