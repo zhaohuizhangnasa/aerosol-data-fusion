@@ -101,39 +101,55 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
     
     
     #set global attributes
-    ds.title = "Level 3 gridded merged aerosol data from Dark Target Algorithm for MEASURES Project "
+    ds.title = "Level-3 quarter-degree 30-minute global aerosol data gridded, averaged and merged from from LEO and GEO sensors"
+    ds.references = "1) Levy, R. C., S. Mattoo, L. A. Munchak, et al. 2013. The Collection 6 MODIS Aerosol Products over Land and Ocean. Atmos Meas Tech 6 2989-3034 [10.5194/amt-6-2989-2013]; 2) Gupta, P.; Remer, L.A.; Patadia, F.; Levy, R.C.; Christopher, S.A. High-Resolution Gridded Level 3 Aerosol Optical Depth Data from MODIS. Remote Sens. 2020, 12, 2847. https://doi.org/10.3390/rs12172847"
     ds.history = "pyroscopegriddingcpu version 1.3.1.x" 
     ds.institution = "NASA Goddard Space Flight Center, Climate and Radiation Laboratory"
-    ds.source = "MODIS-Terra, MODIS-Aqua, VIIRS-SNPP,VIIRS-NOAA20, ABI-G16, ABI-G17, AHI-Himawari-08,AHI-Himawari-09"
-    ds.references = "1) Levy, R. C., S. Mattoo, L. A. Munchak, et al. 2013. The Collection 6 MODIS Aerosol Products over Land and Ocean. Atmos Meas Tech 6 2989-3034 [10.5194/amt-6-2989-2013]; 2) Gupta, P.; Remer, L.A.; Patadia, F.; Levy, R.C.; Christopher, S.A. High-Resolution Gridded Level 3 Aerosol Optical Depth Data from MODIS. Remote Sens. 2020, 12, 2847. https://doi.org/10.3390/rs12172847"
+    ds.publisher_name = "LAADS"
+    ds.publisher_url = "https://ladsweb.modaps.eosdis.nasa.gov"
+    ds.LongName = "VAGHT Combined GEOLEO Aerosol 30-Min average L3 Global 0.25x0.25 degree grid"
+    ds.ShortName = "XAERDT_L3_MEASURES_QD_HH"
+    ds.VersionID = "001"
+    ds.identifier_product_doi = "10.5067/MEaSUREs/GLDTA/XAERDT_L3_MEASURES_QD_HH.001"
+    ds.identifier_product_doi_authority  = "https://dx.doi.org/"
     ds.Conventions = "CF-1.8"
-    ds.LongName = "Level 3 quarter degree gridded global aerosol data from LEO and GEO sensors averaged for a 30 minute interval."
-    ds.VersionID = "V0"
     ds.Format = "NetCDF-4"
-    ds.DataSetQuality = "" #fill it in later
-    ds.IdentifierProductDOI = "" #add this attribute later when the data DOI is reserved
+    ds.processing_level = "L3"
+    ds.AlgorithmType = "SCI"
+    ds.platform = "Terra/Aqua/GOES-16,17/Himawari-8,9/SNPP/NOAA-20"
+    ds.instrument = "MODIS+AHI+ABI+VIIRS"
+    ds.SatelliteInstrument = "VAGHT"
+
+    filename = convert_path_to_linux(filename) #convert to linux pwd
+    cut_index = filename.rindex("/")
+    filename_without_path = filename[cut_index+1 :]
+    ds.LocalGranuleID = filename_without_path
+    
+    #production_yyyymmdd = filename_without_path[-11:-3]
+    production_yyyymmdd = '{}-{}-{}'.format(filename_without_path[-11:-7],
+            filename_without_path[-7:-5],filename_without_path[-5:-3])
+    currtime = datetime.datetime.now()
+    production_hhmmss = currtime.strftime("%H:%M:%S")
     ds.RangeBeginningDate = time_date
     ds.RangeBeginningTime = time_time
     ds.RangeEndingDate = time_end_date
     ds.RangeEndingTime = time_end_time
-    ds.ProcessingLevel = "Level 3"
-    ds.ShortName = "XAERDT_L3_MEASURES_QD_HH"
+    ds.ProductionTime = production_yyyymmdd +" "+ production_hhmmss
+    ds.geospatial_lon_units = "degrees_east" 
+    ds.WestBoundingCoordinate = "-179.875" 
+    ds.EastBoundingCoordinate = "179.875" 
+    ds.geospatial_lat_units = "degrees_north" 
+    ds.NorthBoundingCoordinate = "89.875" 
+    ds.SouthBoundingCoordinate = "-89.875" 
     
-    filename = convert_path_to_linux(filename) #convert to linux pwd
-    cut_index = filename.rindex("/")
-    filename_without_path = filename[cut_index+1 :]
-    ds.GranuleID = filename_without_path
-    
-    production_yyyymmdd = filename_without_path[-11:-3]
-    currtime = datetime.datetime.now()
-    production_hhmmss = currtime.strftime("%H%M%S")
-    ds.ProductionDateTime = production_yyyymmdd +":"+ production_hhmmss
-    
-    ds.IdentifierProductDOIAuthority  = "https://dx.doi.org/"
     
     #list of all files used in creation of this output
-    #ds.SatelliteInputFiles = sat_list_name_concat(filelist)
     ds.InputPointer = ','.join(sat_list_name_concat(filelist))
+    ds.ancillary_files = "LSM_ELV_QDEG_FIXED.nc" 
+    ds.PGE_StartTime = time_date + " " + time_time  
+    ds.PGE_EndTime =  time_end_date + " " + time_end_time
+    ds.PGE_Name = "PGE105"
+    ds.PGEVersion = "1.0.0-1" 
     
     # Create time, lat, lon, sensor dimensions
     timed = ds.createDimension('time', None)
