@@ -103,7 +103,7 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
     #set global attributes
     ds.title = "Level-3 quarter-degree 30-minute global aerosol data gridded, averaged and merged from from LEO and GEO sensors"
     ds.references = "1) Levy, R. C., S. Mattoo, L. A. Munchak, et al. 2013. The Collection 6 MODIS Aerosol Products over Land and Ocean. Atmos Meas Tech 6 2989-3034 [10.5194/amt-6-2989-2013]; 2) Gupta, P.; Remer, L.A.; Patadia, F.; Levy, R.C.; Christopher, S.A. High-Resolution Gridded Level 3 Aerosol Optical Depth Data from MODIS. Remote Sens. 2020, 12, 2847. https://doi.org/10.3390/rs12172847"
-    ds.history = "pyroscopegriddingcpu version 1.3.1.x" 
+    ds.history = "pyroscopegriddingcpu version 1.4.1.0" 
     ds.institution = "NASA Goddard Space Flight Center, Climate and Radiation Laboratory"
     ds.publisher_name = "LAADS"
     ds.publisher_url = "https://ladsweb.modaps.eosdis.nasa.gov"
@@ -489,6 +489,10 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
             else:  #phy_var is NOT AOD
 
                 avgtau,stdtau,grdlat,grdlon,mintau,maxtau,count,sumtau = grid(limit,float(gsize),indata_temp[j],inlat_temp[j],inlon_temp[j])
+                mintau[np.isnan(mintau)]=meta[j]["_FillValue"]
+                maxtau[np.isnan(maxtau)]=meta[j]["_FillValue"]
+                avgtau[np.isnan(avgtau)]=meta[j]["_FillValue"]
+                stdtau[np.isnan(stdtau)]=meta[j]["_FillValue"]
 
                 index = len(values) #i * len(phy_list) + j
                 name = nc_var_name(p_vars, s_name) #str(s_name+"_"+p_vars)
