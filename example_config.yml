@@ -8,11 +8,11 @@ grid_settings:
 
 variables:
   geo_var: ["latitude", "longitude"] #default (what geophysical variables are mapped to)
-  phy_var: ["Sensor_Zenith", "Scattering_Angle", "Image_Optical_Depth_Land_And_Ocean", "Optical_Depth_Land_And_Ocean"] # output names and master list
+  phy_var: ["Sensor_Zenith_Angle", "Scattering_Angle", "Image_Optical_Depth_Land_And_Ocean", "Optical_Depth_Land_And_Ocean"] # output names and master list
   phy_var_nc: ["sensor_zenith_angle", "Scattering_Angle", "Image_Optical_Depth_Land_And_Ocean", "Optical_Depth_Land_And_Ocean"] # geophysical variables netCDF
   phy_var_hdf: ["Sensor_Zenith", "Scattering_Angle", "Image_Optical_Depth_Land_And_Ocean","Optical_Depth_Land_And_Ocean"] # geophysical variables hdf
   aod_range: [-0.05, 5.] # aod range only (metadata is different, metadata takes precedence) 
-  pixel_range: [0, 500] # Range for pixel count at single pixel
+  pixel_range: [0, 10000] # Range for pixel count at single pixel
 
 file_io:
   # file_directory_folder takes precedence over fole_location_folder unless "NA"
