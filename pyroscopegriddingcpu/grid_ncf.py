@@ -98,10 +98,9 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
     time_end = time_start + datetime.timedelta(minutes=time_diff)
     time_end_date = time_end.strftime('%Y-%m-%d')
     time_end_time = time_end.strftime('%H:%M:%S.%f')[:-4]
-    
-    
+
     #set global attributes
-    ds.title = "Level-3 quarter-degree 30-minute global aerosol data gridded, averaged and merged from from LEO and GEO sensors"
+    ds.title = "Level-3 quarter-degree 30-minute global aerosol data gridded, averaged and merged from LEO and GEO sensors"
     ds.references = "1) Levy, R. C., S. Mattoo, L. A. Munchak, et al. 2013. The Collection 6 MODIS Aerosol Products over Land and Ocean. Atmos Meas Tech 6 2989-3034 [10.5194/amt-6-2989-2013]; 2) Gupta, P.; Remer, L.A.; Patadia, F.; Levy, R.C.; Christopher, S.A. High-Resolution Gridded Level 3 Aerosol Optical Depth Data from MODIS. Remote Sens. 2020, 12, 2847. https://doi.org/10.3390/rs12172847"
     ds.history = "pyroscopegriddingcpu version 1.4.1.0" 
     ds.institution = "NASA Goddard Space Flight Center, Climate and Radiation Laboratory"
@@ -227,11 +226,9 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
         # copy all file data in the specified variables
         for name, variable in src.variables.items():
             if name in static_vars:
-                dimensions = ('time', 'lat', 'lon',)
+                dimensions = ('lat', 'lon',)
                 x = ds.createVariable(name, variable.datatype, dimensions,compression='zlib') #variable.dimensions)
-                #ds[name][:] = src[name][:]
-                ds[name][0, :, :] = src[name][:]
-                #print(ds[name][:])
+                ds[name][:, :] = src[name][:]
                 # copy variable attributes all at once via dictionary
                 ds[name].setncatts(src[name].__dict__)
                 
@@ -239,23 +236,33 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
                 if name == "Topographic_Altitude":
                     ds[name].long_name = "Averaged topographic altitude (in meter) for Land"
                     ds[name].units = "m"
+                    #kvp
+                    ds[name].valid_range = [-1, 10000]
+                    ds[name].scale_factor = 1.0
+                    ds[name].add_offset = float(0)
+
                 else:
-                    ds[name].long_name = "Land_Sea_Flag (based on MOD03 Landsea mask 0 = Ocean, 1 = Land and ephemeral water 2 = Coastal)"
-                    
+                    #check ds[name].long_name = "Land_Sea_Flag (based on MOD03 Landsea mask 0 = Ocean, 1 = Land and ephemeral water 2 = Coastal)"
+                    ds[name].long_name = "Land_Sea_Flag (Landsea mask: 0 = Ocean, 1 = Land and ephemeral water)"
+                    #kvp
+                    ds[name].valid_range = [0, 1]
+                    #ds[name].scale_factor = 1.0
+                    #ds[name].add_offset = 0.0
+
         src.close()
     
     print("Done with static file transfer")
     
     # Solar zenith angle 
     name = "Solar_Zenith_Angle"
-    solar_zenith_variable = ds.createVariable(name, 'f4', ('time', 'lat', 'lon', ), fill_value=int(-9999),compression='zlib')
+    solar_zenith_variable = ds.createVariable(name, 'f4', ('lat', 'lon', ), fill_value=int(-9999),compression='zlib')
     solar_zenith_variable.long_name = "Solar Zenith Angle at the center of grid calculated for central time of the file"
     solar_zenith_variable.units = "degrees"
     solar_zenith_variable.valid_range = [ 0, 18000]
     solar_zenith_variable.scale_factor = 0.01
     solar_zenith_variable.add_offset = float(0)
     #netCDF4.nc_put_att(ds, solar_zenith_variable, 'add_offset', 'f4', 1, 0)
-    solar_zenith_variable[0, :, :] = get_SZA_parallelized(limit, gsize, time_start, time_diff)
+    solar_zenith_variable[:, :] = get_SZA_parallelized(limit, gsize, time_start, time_diff)
     print("solar zenith done")
 
     # for calculating LEOGEO statistics
@@ -277,13 +284,14 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
                 present_satellites.append(s)
                 
     not_present_satellites = [s for s in full_satellite_list if s not in present_satellites]
-    print("ggg",present_satellites) 
-    print(not_present_satellites) 
+    #kvp
+    print("Present Sensors: ",present_satellites) 
+    print('Sensors not available: ',not_present_satellites) 
     # metadata for not_present_satellites
 
     for s_name in not_present_satellites: # not present satellites
         for j, p_vars in enumerate(phy_list): # creating a variable for each geophysical variable 
-            if not("Sensor_Zenith" in p_vars or "Scattering_Angle" in p_vars):
+            if not("Sensor_Zenith_Angle" in p_vars or "Scattering_Angle" in p_vars):
                 aod_statistics = ["Mean", "STD", "Pixels"]
                 
                 for aod_stat in aod_statistics:
@@ -291,16 +299,16 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
                     
                     #default fill value is fill value for first satellite encountered when reading files in
                     if len(meta) > 0:
-                        ds.createVariable(name, np.short, ('time', 'lat', 'lon', ), fill_value = meta[0]["_FillValue"],compression='zlib')
+                        ds.createVariable(name, np.short, ('lat', 'lon', ), fill_value = meta[0]["_FillValue"],compression='zlib')
                     else:
-                        #ds.createVariable(name, np.short, ('time', 'lat', 'lon', ), fill_value = -9999)
-                        name=ds.createVariable(name, np.short, ('time', 'lat', 'lon', ), fill_value = -9999,compression='zlib')
+                        ##ds.createVariable(name, np.short, ('time', 'lat', 'lon', ), fill_value = -9999)
+                        name=ds.createVariable(name, np.short, ('lat', 'lon', ), fill_value = -9999,compression='zlib')
 
                         name.units = "None"
                         for_longname = nc_long_name(p_vars, s_name, aod_stat, aod_long=None)
 
                         if not(aod_stat in "Pixels") or not("Pixels" in aod_stat):
-                            name.valid_range = [-100, 5000]
+                            name.valid_range = [-100, 10000]
 
                             if (p_vars == 'Optical_Depth_Land_And_Ocean'):
                                 longname = for_longname + (" AOT at 0.55 micron for both ocean (Average) (Quality flag = 1, 2, 3) and land (corrected) (Quality flag = 3) for the grid")
@@ -312,7 +320,7 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
                             name.add_offset = 0.0
 
                         else:
-                            name.valid_range = [0, 5000]
+                            name.valid_range = [0, 10000]
                             # valid range for Pixel must be from 0
                             #if pixel_range == None:
                             if (p_vars == 'Optical_Depth_Land_And_Ocean'):
@@ -325,17 +333,17 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
             else: #phy_var is NOT aod
                 name = nc_var_name(p_vars, s_name) #str(s_name+"_"+p_vars)
                 if len(meta) > 0:
-                    values.append(ds.createVariable(name, np.short, ('time', 'lat', 'lon', ), fill_value = meta[0]["_FillValue"],compression='zlib'))
+                    values.append(ds.createVariable(name, np.short, ('lat', 'lon', ), fill_value = meta[0]["_FillValue"],compression='zlib'))
                 else:
-                    #values.append(ds.createVariable(name, np.short, ('time', 'lat', 'lon', ), fill_value = -9999))
-                    name=ds.createVariable(name, np.short, ('time', 'lat', 'lon', ), fill_value = -9999, compression='zlib')
+                    ##values.append(ds.createVariable(name, np.short, ('time', 'lat', 'lon', ), fill_value = -9999))
+                    name=ds.createVariable(name, np.short, ('lat', 'lon', ), fill_value = -9999, compression='zlib')
 
                     name.units = "degrees" #meta[j]["units"]
                     name.valid_range = [0, 18000]
                     name.long_name = nc_long_name(p_vars, s_name)
                     name.scale_factor = 0.01
                     name.add_offset = 0.0
-                    if ("Sensor_Zenith" in p_vars):
+                    if ("Sensor_Zenith_Angle" in p_vars):
                         name.Parameter_Type = s_name + " Input"
                     if ("Scattering_Angle" in p_vars):
                         name.Parameter_Type = "Output"                    
@@ -387,7 +395,7 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
             
             #special metadata and statistic calculations for AOD
             # values that need LEOGEO statistic calculations
-            if not("Sensor_Zenith" in p_vars or "Scattering_Angle" in p_vars):#"Optical_Depth_Land_And_Ocean" in p_vars:
+            if not("Sensor_Zenith_Angle" in p_vars or "Scattering_Angle" in p_vars):#"Optical_Depth_Land_And_Ocean" in p_vars:
                 aod_statistics = ["Mean", "STD", "Pixels"]
                 avgtau,stdtau,grdlat,grdlon,mintau,maxtau,count,sumtau = grid(limit,float(gsize),indata_temp[j],inlat_temp[j],inlon_temp[j])
                 mintau[np.isnan(mintau)]=meta[j]["_FillValue"]
@@ -401,7 +409,7 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
                     index = len(values) #i * len(phy_list) + j
                     aod_long = meta[j]["long_name"]
                     name = nc_var_name(p_vars, s_name, aod_stat) #str(s_name+"_"+p_vars)
-                    values.append(ds.createVariable(name, np.short, ('time', 'lat', 'lon', ), fill_value=meta[j]["_FillValue"],compression='zlib'))
+                    values.append(ds.createVariable(name, np.short, ('lat', 'lon', ), fill_value=meta[j]["_FillValue"],compression='zlib'))
                     
                     # metadata
                     values[index].units = "None" #meta[j]["units"]
@@ -417,9 +425,9 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
                     else:
                         # valid range for Pixel must be from 0
                         if pixel_range == None:
-                            values[index].valid_range = [0, 5000]
+                            values[index].valid_range = [0, 10000]
                         else:
-                            values[index].valid_range = [0, 5000]
+                            values[index].valid_range = [0, 10000]
 
                     
                     # instantiate the dictionary for statistics
@@ -475,8 +483,8 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
                     
                     final_input = np.flipud(rotated)#.astype(np.short)
                     final_input = final_input #/meta[j]["scale_factor"]
-                    values[index][0, :, :] = final_input 
-                    values[index][0, :, :] = values[index][0, :, :].astype("f4")
+                    values[index][:, :] = final_input
+                    values[index][:, :] = values[index][:, :].astype("f4")
 
                     # AOD print
                    
@@ -496,8 +504,7 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
 
                 index = len(values) #i * len(phy_list) + j
                 name = nc_var_name(p_vars, s_name) #str(s_name+"_"+p_vars)
-                
-                values.append(ds.createVariable(name, np.short, ('time', 'lat', 'lon', ), fill_value=meta[j]["_FillValue"],compression='zlib'))
+                values.append(ds.createVariable(name, np.short, ('lat', 'lon', ), fill_value=meta[j]["_FillValue"],compression='zlib'))
                 
                 # metadata
                 values[index].units = "degrees"#meta[j]["units"]
@@ -524,7 +531,7 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
                 rotated[rotated < meta[j]["valid_range"][0]-1] = meta[j]["_FillValue"]
                 
                 
-                values[index][0, :, :] = np.flipud(rotated) # put into variable
+                values[index][:, :] = np.flipud(rotated) # put into variable
                 #sensors[p_vars].append(np.flipud(rotated)) #add it to complete dataset for LEOGEO calculations
 
                 #time
@@ -571,8 +578,8 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
                 else:
                    stat_values = calculate_statistic(statistic, leogeo_stats["TotalPixels"])
                 
-                leogeo_calculated_statistics[leogeo_index].append(ds.createVariable(name, np.short, 
-                    ('time', 'lat', 'lon', ), fill_value = -9999 ,compression='zlib')) #1/29/2023 - added fill value
+                leogeo_calculated_statistics[leogeo_index].append(ds.createVariable(name, np.short,
+                    ('lat', 'lon', ), fill_value = -9999 ,compression='zlib')) #1/29/2023 - added fill value
 
                 #print("MAX STAT VALUE for ", statistic, ":", stat_values.max())
                 leogeo_long = meta[leogeo_meta_index]["long_name"]
@@ -597,8 +604,8 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
                     leogeo_calculated_statistics[leogeo_index][i].valid_range = meta[leogeo_meta_index]["valid_range"]
                 else:
                     #Total pixels does nott have scale_factor, add_offset
-                    leogeo_calculated_statistics[leogeo_index][i].valid_range = [0, 5000]
-                leogeo_calculated_statistics[leogeo_index][i][0, :, :] = stat_values
+                    leogeo_calculated_statistics[leogeo_index][i].valid_range = [0, 10000]
+                leogeo_calculated_statistics[leogeo_index][i][:, :] = stat_values
                 i+=1
             
             
@@ -609,6 +616,8 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
             sensor_idx_variable[leogeo_index].long_name = nc_long_name(p_var, "LEOGEO",
                             "SensorWeighting", meta[j]["long_name"]) + " for the grid"
             sensor_idx_variable[leogeo_index].units = "None"
+            #kvp
+            sensor_idx_variable[leogeo_index].valid_range = [0, 1]
             number_of_sensors = []
             
             i = 0
@@ -630,11 +639,14 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
                 i+=1
             
             name = nc_var_name(p_var, "LEOGEO", "NumberOfSensors")
-            number_of_sensors_variable.append(ds.createVariable(name, np.short, ('time', 'lat', 'lon', ),compression='zlib'))   
-            number_of_sensors_variable[leogeo_index][0, :, :] = number_of_sensors
+            number_of_sensors_variable.append(ds.createVariable(name, np.short, ('lat', 'lon', ),compression='zlib'))
+            number_of_sensors_variable[leogeo_index][:, :] = number_of_sensors
+
             number_of_sensors_variable[leogeo_index].long_name = nc_long_name(p_var, "LEOGEO",
                                      "NumberOfSensors", meta[j]["long_name"])  + " for the grid"
             number_of_sensors_variable[leogeo_index].units = "None"
+            #kvp
+            number_of_sensors_variable[leogeo_index].valid_range = [0, len(sensor_order)] # len(full_satellite_list)
             
             leogeo_index+=1    
         j += 1
