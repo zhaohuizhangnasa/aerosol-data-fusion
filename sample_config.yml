@@ -19,7 +19,7 @@ file_io:
   # file_location_folder takes precedence over file_location_file unless "NA"
   # file_directory_folder will read subdirectories
   # file_location_folder will not
-  file_directory_folder: "NA" #"/data2/vkiliyan/Pyroscopegridding_V3/Sample/Sample_Inputs/"
+  file_directory_folder: "NA" #"../Pyroscopegridding_V3/Sample/Sample_Inputs/"
   file_location_folder: "NA" #"/mnt/c/Users/bobgr/Desktop/NASA Spring 2023/Gridtools Package (Code, README, inputs, outputs, examples, verification)/SampleInputs limited/"
   #file_location_file: "NA"  #"PATH/file_name_containing_paths_of_specific_files_to_read.txt"
   file_location_file: "./input_file.txt"
