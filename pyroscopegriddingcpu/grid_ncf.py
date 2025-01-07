@@ -308,7 +308,7 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
                         for_longname = nc_long_name(p_vars, s_name, aod_stat, aod_long=None)
 
                         if not(aod_stat in "Pixels") or not("Pixels" in aod_stat):
-                            name.valid_range = [-100, 10000]
+                            name.valid_range = [-100, 5000]
 
                             if (p_vars == 'Optical_Depth_Land_And_Ocean'):
                                 longname = for_longname + (" AOT at 0.55 micron for both ocean (Average) (Quality flag = 1, 2, 3) and land (corrected) (Quality flag = 3) for the grid")
