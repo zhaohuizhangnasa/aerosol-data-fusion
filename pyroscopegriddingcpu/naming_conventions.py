@@ -22,17 +22,17 @@ sensor_references = { "MYD":"MODIS_Aqua", "MOD":"MODIS_Terra",
         "VIIRS_SNPP":"VIIRS_SNPP", "VIIRS_NOAA20":"VIIRS_NOAA20",
                      "LEOGEO":"LEOGEO"}
 
-geophys_references = { "Sensor_Zenith", "Scattering_Angle", "AOD_AllQA_550", "AOD_FilteredQA_550"}
+geophys_references = { "Sensor_Zenith_Angle", "Scattering_Angle", "AOD_AllQA_550", "AOD_FilteredQA_550"}
 
 # for long_name
-sensor_references_long = { "MYD":"MODIS Aqua", "MOD":"MODIS Terra", "ABI_G16":"ABI GOES-16 (GOES-East)", 
+sensor_references_long = { "MYD":"MODIS Aqua", "MOD":"MODIS Terra", "ABI_G16":"ABI GOES-16 (GOES-East)",
                      "ABI_G17":"ABI GOES-17 (GOES-West)", "VIIRS_SNPP":"SNPP VIIRS",
                      "AHI_H08":"AHI Himawari-8", "AHI_H09":"AHI Himawari-9","VIIRS_NOAA20":"NOAA-20 VIIRS",
                      "LEOGEO":"LEO GEO"}
 #sensor_references_long = { "MYD":"MODIS Aqua", "MOD":"MODIS Terra", "ABI_G16":"ABI GOES-16 (GOES-R or GOES-East)", 
 #                     "ABI_G17":"ABI GOES-17 (GOES-S or GOES-West)", "VIIRS_SNPP":"SNPP VIIRS",
 
-geophys_references_long = { "Sensor_Zenith":"Sensor Viewing Angle", 
+geophys_references_long = { "Sensor_Zenith_Angle":"Sensor Viewing Angle", 
                       "Scattering_Angle":"", 
                       "AOD_AllQA_550":"", 
                       "AOD_FilteredQA_550":""}
@@ -77,7 +77,7 @@ def nc_long_name(geophys_name, sensor_name, statistic = None, aod_long = None, f
         for sensor_key in sensor_references_long: #add appropriate sensor name
             if sensor_key in sensor_name:
                 name = name + " " + sensor_references_long[sensor_key] 
-        if geophys_name == "Sensor_Zenith":
+        if geophys_name == "Sensor_Zenith_Angle":
             name = name + " Sensor Viewing Angle, mean for the grid"
         elif geophys_name == "Scattering_Angle":
             name = name + " Scattering Angle, mean for the grid"
