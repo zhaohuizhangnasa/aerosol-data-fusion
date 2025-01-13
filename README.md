@@ -22,7 +22,14 @@ check requirements.txt for the required versions or additional libraries. numba 
 
 ## Inputs
 
-Supported input formats include netCDF4 and HDF file formats.
+1) User's input files in netCDF4 and HDF formats.
+2) A fixed static netcdf file named as "LSM_ELV_QDEG_FIXED.nc"
+Download this static file from https://github.com/zhaohuizhangnasa/aerosol-data-fusion/tree/main/data to your local, 
+and modify the "static_file" path in your YAML configuration file (check the YAML Configuration readme for the details).
+
+e.g., static_file: "/the absolute path/LSM_ELV_QDEG_FIXED.nc"
+
+
 
 ## Outputs
 
