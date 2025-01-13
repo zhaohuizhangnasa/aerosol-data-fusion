@@ -89,7 +89,8 @@ def read_config(yfile):
     file_io = data["file_io"]
 
     #print(grid_settings)
-    #print(variables)
+    print('filep======================================================')
+    print(variables)
     #print(file_io)
 
     return grid_settings, variables, file_io
