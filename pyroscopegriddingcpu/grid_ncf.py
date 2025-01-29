@@ -102,11 +102,11 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
     #set global attributes
     ds.title = "Level-3 quarter-degree 30-minute global aerosol data gridded, averaged and merged from LEO and GEO sensors"
     ds.references = "1) Levy, R. C., S. Mattoo, L. A. Munchak, et al. 2013. The Collection 6 MODIS Aerosol Products over Land and Ocean. Atmos Meas Tech 6 2989-3034 [10.5194/amt-6-2989-2013]; 2) Gupta, P.; Remer, L.A.; Patadia, F.; Levy, R.C.; Christopher, S.A. High-Resolution Gridded Level 3 Aerosol Optical Depth Data from MODIS. Remote Sens. 2020, 12, 2847. https://doi.org/10.3390/rs12172847"
-    ds.history = "pyroscopegriddingcpu version 1.4.1.0" 
+    ds.history = "pyroscopegriddingcpu version 1.5.0.0" 
     ds.institution = "NASA Goddard Space Flight Center, Climate and Radiation Laboratory"
     ds.publisher_name = "LAADS"
     ds.publisher_url = "https://ladsweb.modaps.eosdis.nasa.gov"
-    ds.LongName = "VAGHT Combined GEOLEO Aerosol 30-Min average L3 Global 0.25x0.25 degree grid"
+    ds.LongName = "THANGS Combined GEOLEO Aerosol 30-Min average L3 Global 0.25x0.25 degree grid"
     ds.ShortName = "XAERDT_L3_MEASURES_QD_HH"
     ds.VersionID = "001"
     ds.identifier_product_doi = "10.5067/MEaSUREs/GLDTA/XAERDT_L3_MEASURES_QD_HH.001"
@@ -115,9 +115,9 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
     ds.Format = "NetCDF-4"
     ds.processing_level = "L3"
     ds.AlgorithmType = "SCI"
-    ds.platform = "Terra/Aqua/GOES-16,17/Himawari-8,9/SNPP/NOAA-20"
+    ds.platform = "Terra/Himawari-8,9/Aqua//NOAA-20/GOES-16,17/SNPP"
     ds.instrument = "MODIS+AHI+ABI+VIIRS"
-    ds.SatelliteInstrument = "VAGHT"
+    ds.SatelliteInstrument = "THANGS"
 
     filename = convert_path_to_linux(filename) #convert to linux pwd
     cut_index = filename.rindex("/")
