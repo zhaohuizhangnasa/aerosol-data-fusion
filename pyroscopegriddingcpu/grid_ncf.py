@@ -102,7 +102,7 @@ def grid_nc_sensor_statistics_metadata(limit, gsize, geo_list, phy_list, filelis
     #set global attributes
     ds.title = "Level-3 quarter-degree 30-minute global aerosol data gridded, averaged and merged from LEO and GEO sensors"
     ds.references = "1) Levy, R. C., S. Mattoo, L. A. Munchak, et al. 2013. The Collection 6 MODIS Aerosol Products over Land and Ocean. Atmos Meas Tech 6 2989-3034 [10.5194/amt-6-2989-2013]; 2) Gupta, P.; Remer, L.A.; Patadia, F.; Levy, R.C.; Christopher, S.A. High-Resolution Gridded Level 3 Aerosol Optical Depth Data from MODIS. Remote Sens. 2020, 12, 2847. https://doi.org/10.3390/rs12172847"
-    ds.history = "pyroscopegriddingcpu version 1.5.0.0" 
+    ds.history = "pyroscopegriddingcpu version 1.5.1.0" 
     ds.institution = "NASA Goddard Space Flight Center, Climate and Radiation Laboratory"
     ds.publisher_name = "LAADS"
     ds.publisher_url = "https://ladsweb.modaps.eosdis.nasa.gov"
